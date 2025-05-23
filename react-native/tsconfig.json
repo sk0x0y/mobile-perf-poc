@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "target": "esnext",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@services/*": ["./src/services/*"],
+      "@typedefs/*": ["./src/types/*"],
+      "@list-tests/*": ["./src/list-tests/*"],
+      "@providers/*": ["./src/providers/*"],
+      "@assets/*": ["./assets/*"],
+      "@docs/*": ["./docs/*"],
+      "@constants/*": ["./constants/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".eslintrc.js",
+    "babel.config.js",
+    "src/components/**/*",
+    "src/hooks/**/*",
+    "src/utils/**/*",
+    "src/services/**/*",
+    "src/types/**/*",
+    "src/providers/**/*",
+    "src/list-tests/**/*",
+    "assets/**/*",
+    "constants/**/*",
+    "docs/**/*"
+  ],
+  "exclude": ["node_modules"],
+  "extends": "expo/tsconfig.base"
+}

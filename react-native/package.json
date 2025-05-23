@@ -1,0 +1,46 @@
+{
+  "name": "mobile-perf-poc",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "check-format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\""
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@shopify/flash-list": "^1.7.6",
+    "date-fns": "^4.1.0",
+    "expo": "~53.0.9",
+    "expo-constants": "^17.1.6",
+    "expo-device": "^7.1.4",
+    "expo-file-system": "^18.1.10",
+    "expo-linking": "^7.1.5",
+    "expo-router": "5.0.7",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-hook-form": "^7.56.4",
+    "react-native": "0.79.2",
+    "react-native-device-info": "^14.0.4",
+    "react-native-fast-image": "^8.6.3",
+    "react-native-gesture-handler": "^2.24.0",
+    "react-native-pager-view": "^6.7.1",
+    "react-native-performance": "^5.1.2",
+    "react-native-reanimated": "^3.17.5",
+    "react-native-safe-area-context": "^5.4.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~19.0.10",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "typescript": "~5.8.3"
+  },
+  "private": true,
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
+}

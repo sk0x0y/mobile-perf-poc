@@ -1,0 +1,10 @@
+node_modules
+ios
+android
+build
+coverage
+.bundle
+__snapshots__
+*.lock
+*.hprof
+*.log
