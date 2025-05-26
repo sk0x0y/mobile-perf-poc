@@ -51,7 +51,7 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 - **Path Aliases**: Implemented to simplify import paths and improve code readability. The `@types` alias was renamed to `@typedefs` for clarity and to avoid potential conflicts.
 - **Barrel Pattern**: Applied to group related modules and streamline imports.
 - **React Native Performance Libraries**: Integrated for measuring and monitoring app performance.
-- **FastImage**: Used for optimized image loading and caching.
+- **Expo Image**: Used for optimized image loading and caching, replacing `FastImage` due to better compatibility with Expo and ongoing maintenance.
 - **Zustand**: Planned for state management (lightweight and flexible).
 
 ## Design Patterns

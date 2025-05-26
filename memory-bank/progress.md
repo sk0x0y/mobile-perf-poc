@@ -16,7 +16,8 @@
 - **All comments removed from `.ts`, `.tsx`, and `.js` files within the `react-native` directory.**
 - **Path alias `@types` renamed to `@typedefs`**: Configuration files (`tsconfig.json`, `babel.config.js`) updated. No code changes were required as direct imports using `@types/` prefix were not found.
 - **List rendering test basic structure unified**: `sectionlist.tsx` and `virtualized.tsx` were modified to use `AutomatedFeedTest`.
-- **FastImage integration**: `FeedItem.tsx` was updated to use `FastImage` for image loading.
+- **Expo Image integration**: `FeedItem.tsx` was updated to use `expo-image` for image loading, replacing `FastImage`. `react-native-fast-image` 의존성 제거 완료.
+- **FlashList 최적화**: `AutomatedFeedTest.tsx`에서 `estimatedItemSize` 및 `getItemType`을 사용하여 `FlashList` 최적화 적용.
 - **`react-native-performance` related TypeScript issues resolved**: `performance.ts` was updated to extend `PerformanceEntry` type and cast `entryType`.
 - **`any` type replacement**: `feed.ts` was updated with more specific interfaces instead of `any`.
 - **`generateTestData` function implemented**: `data-generator.ts` now includes the `generateTestData` function.
@@ -34,7 +35,7 @@
 - Implementation of utility functions (data generation, formatting, validation) in both frameworks.
 - Implementation of service functions (API, storage) in both frameworks.
 - Integration of performance metrics display in the UI for both applications.
-- Addressing the peer dependency warning for `react-native-fast-image` in the React Native project.
+- Addressing the peer dependency warning for `react-native-fast-image` in the React Native project. (Note: This will be resolved by switching to `expo-image`).
 - Setting up and running automated performance tests for both frameworks.
 - Analyzing performance test results and documenting findings in `memory-bank/progress.md`.
 - Preparing a report comparing the performance of React Native and Flutter based on the test results.
@@ -45,10 +46,20 @@ The React Native project's foundational structure and configuration are now larg
 
 ## Known Issues
 
+- **JavaScript 기반 FPS 측정 구현**: `requestAnimationFrame`을 활용한 FPS 및 프레임 드롭 측정 기능을 순수 JavaScript로 구현하여 Expo 관리형 워크플로우의 제한을 우회.
+- **성능 측정 인프라 개선**: `usePerformanceMetrics` 훅에 getter 함수들을 추가하여 비동기 상태 업데이트로 인한 데이터 수집 문제 해결.
+- **Watchman 서비스 관련 오류 해결**: 프로젝트 실행 시 발생하던 권한 관련 오류를 Watchman 서비스 재시작으로 해결.
+
+## Known Issues
+
+- **`react-native-performance` `frame` entry type not supported**: `WARN The entry type 'frame' does not exist or isn't supported.` 경고가 발생하여 FPS 및 프레임 드롭 측정이 현재 Expo 관리형 워크플로우에서 불가능합니다. 다른 지표(렌더링 시간, 메모리, 전환 지연)에 집중하거나, 개발 빌드 전환을 고려해야 합니다.
 - TypeScript errors related to `react-native-performance` persist and are currently suppressed with `@ts-ignore`.
 - The terminal output in the environment details is not updating reliably, making it difficult to confirm successful bundling and app launch.
-- A peer dependency warning exists for `react-native-fast-image` and React version 19.
 - **`expo-router` default export warning**: `WARN Route "./(tabs)/index.tsx" is missing the required default export.` This warning persists despite verifying the `index.tsx` and `_layout.tsx` files. It is currently considered a non-blocking issue, possibly related to Expo's internal caching or `expo-router` version.
+
+## Evolution of Project Decisions
+
+- **JavaScript 기반 FPS 측정 채택**: 네이티브 'frame' 엔트리 타입 지원 제한을 해결하기 위해 `requestAnimationFrame` 기반의 JavaScript FPS 측정 방식을 구현했습니다. 이는 베어 워크플로우로 전환하지 않고도 의미 있는 성능 데이터를 수집할 수 있게 합니다.
 
 ## Evolution of Project Decisions
 
