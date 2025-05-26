@@ -60,3 +60,14 @@ export async function getPerformanceTestResults() {
     return [];
   }
 }
+
+export async function saveInitialLoadTime(loadTime: number) {
+  try {
+    const key = `perf_initial_load_time_${Date.now()}`;
+    await AsyncStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), loadTime }));
+    return key;
+  } catch (e) {
+    console.error('초기 로딩 시간 저장 실패:', e);
+    return null;
+  }
+}
