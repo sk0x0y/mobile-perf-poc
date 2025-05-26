@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 
 import {
   measureRenderTime,
-  measureFPS,
+  measureJsFPS,
   measureTransitionDelay,
   measureMemoryUsage,
 } from '@utils/performance';
@@ -17,7 +17,7 @@ export function usePerformanceMetrics() {
   });
 
   const renderTimeStopRef = useRef<(() => void) | null>(null);
-  const fpsMeasurerRef = useRef<ReturnType<typeof measureFPS> | null>(null);
+  const fpsMeasurerRef = useRef<ReturnType<typeof measureJsFPS> | null>(null);
   const transitionMeasurerRef = useRef<ReturnType<typeof measureTransitionDelay> | null>(null);
   const memoryMeasurerRef = useRef<ReturnType<typeof measureMemoryUsage> | null>(null);
 
@@ -35,8 +35,8 @@ export function usePerformanceMetrics() {
       time => setMetrics(prev => ({ ...prev, renderTime: time }))
     );
 
-    fpsMeasurerRef.current = measureFPS();
-    fpsMeasurerRef.current.start((fps, drops) => {
+    fpsMeasurerRef.current = measureJsFPS();
+    fpsMeasurerRef.current.start((fps: number, drops: number) => {
       setMetrics(prev => ({ ...prev, fps: fps, frameDrops: drops }));
     });
 
@@ -65,6 +65,26 @@ export function usePerformanceMetrics() {
     }
   }, []);
 
+  const getMemoryUsage = useCallback(() => {
+    return memoryMeasurerRef.current?.getCurrentMemory() || 0;
+  }, []);
+
+  const getCurrentFps = useCallback(() => {
+    return fpsMeasurerRef.current?.getCurrentFps() || 0;
+  }, []);
+
+  const getDroppedFrames = useCallback(() => {
+    return fpsMeasurerRef.current?.getDroppedFrames() || 0;
+  }, []);
+
+  const getCurrentRenderTime = useCallback(() => {
+    return metrics.renderTime;
+  }, [metrics.renderTime]);
+
+  const getCurrentTransitionDelay = useCallback(() => {
+    return metrics.transitionDelay;
+  }, [metrics.transitionDelay]);
+
   const startTransition = useCallback(() => {
     transitionMeasurerRef.current?.startTransition();
   }, []);
@@ -82,6 +102,11 @@ export function usePerformanceMetrics() {
     stopMeasuring,
     startTransition,
     endTransition,
+    getMemoryUsage,
+    getCurrentFps,
+    getDroppedFrames,
+    getCurrentRenderTime,
+    getCurrentTransitionDelay,
   };
 }
 
