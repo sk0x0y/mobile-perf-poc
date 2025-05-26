@@ -40,3 +40,5 @@ yarn-error.*
 core.md
 copilot-instructions.md
 PRD*.md
+.vscode
+.idea
