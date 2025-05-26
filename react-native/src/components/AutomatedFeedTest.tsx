@@ -37,6 +37,7 @@ interface PerformanceDataItem {
   frameDrops: number;
   memoryUsage: number;
   transitionDelay: number;
+  renderTime: number;
 }
 
 export function AutomatedFeedTest({
@@ -56,8 +57,18 @@ export function AutomatedFeedTest({
     FlatList | FlashList<FeedItemData> | SectionList | VirtualizedList<FeedItemData> | any
   >(null);
 
-  const { metrics, startMeasuring, stopMeasuring, startTransition, endTransition } =
-    usePerformanceMetrics();
+  const {
+    metrics,
+    startMeasuring,
+    stopMeasuring,
+    startTransition,
+    endTransition,
+    getMemoryUsage,
+    getCurrentFps,
+    getDroppedFrames,
+    getCurrentRenderTime,
+    getCurrentTransitionDelay,
+  } = usePerformanceMetrics();
   const performanceData = useRef<PerformanceDataItem[]>([]);
   const testStartTime = useRef(0);
 
@@ -121,16 +132,42 @@ export function AutomatedFeedTest({
       performanceData.current.push({
         time: performance.now() - testStartTime.current,
         pageIndex: i,
-        fps: metrics.fps,
-        frameDrops: metrics.frameDrops,
-        memoryUsage: metrics.memoryUsage,
-        transitionDelay: metrics.transitionDelay,
+        fps: getCurrentFps(),
+        frameDrops: getDroppedFrames(),
+        memoryUsage: getMemoryUsage(),
+        transitionDelay: getCurrentTransitionDelay(),
+        renderTime: getCurrentRenderTime(),
       });
 
       setProgress(Math.round(((i + 1) / actualItemCount) * 100));
     }
 
     stopMeasuring();
+
+    const totalFps = performanceData.current.reduce((sum, data) => sum + data.fps, 0);
+    const totalFrameDrops = performanceData.current.reduce((sum, data) => sum + data.frameDrops, 0);
+    const totalMemoryUsage = performanceData.current.reduce(
+      (sum, data) => sum + data.memoryUsage,
+      0
+    );
+    const totalTransitionDelay = performanceData.current.reduce(
+      (sum, data) => sum + data.transitionDelay,
+      0
+    );
+    const totalRenderTime = performanceData.current.reduce((sum, data) => sum + data.renderTime, 0);
+
+    const aggregatedMetrics = {
+      fps: performanceData.current.length > 0 ? totalFps / performanceData.current.length : 0,
+      frameDrops: totalFrameDrops,
+      memoryUsage:
+        performanceData.current.length > 0 ? totalMemoryUsage / performanceData.current.length : 0,
+      transitionDelay:
+        performanceData.current.length > 0
+          ? totalTransitionDelay / performanceData.current.length
+          : 0,
+      renderTime:
+        performanceData.current.length > 0 ? totalRenderTime / performanceData.current.length : 0,
+    };
 
     const testId = `${testName}_${Date.now()}`;
 
@@ -139,15 +176,15 @@ export function AutomatedFeedTest({
       timestamp: Date.now(),
       itemCount: actualItemCount,
       swipeDuration,
-      summary: metrics,
+      summary: aggregatedMetrics,
     };
 
     await saveTestMetadata(testId, metaData);
     await saveDetailedPerformanceData(testId, performanceData.current);
 
-    setResults(metrics);
+    setResults(aggregatedMetrics);
     setIsRunning(false);
-    onComplete?.(testId, metrics);
+    onComplete?.(testId, aggregatedMetrics);
   };
 
   const renderFeedItem = useCallback(({ item, index }: { item: FeedItemData; index: number }) => {
@@ -208,6 +245,14 @@ export function AutomatedFeedTest({
               `flashlist-${item.feed?.id || item.shortply?.id}-${index}`
             }
             estimatedItemSize={height}
+            getItemType={item => {
+              if (item.feed) {
+                return 'feed';
+              } else if (item.shortply) {
+                return 'shortply';
+              }
+              return 'unknown';
+            }}
           />
         );
       case 'SectionList Test':
