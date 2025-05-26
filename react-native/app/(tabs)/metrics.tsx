@@ -11,6 +11,8 @@ interface TestResult {
     summary: {
       fps?: number;
       memoryUsage?: number;
+      renderTime?: number;
+      transitionDelay?: number;
     };
   };
   detailData: any;
@@ -34,6 +36,8 @@ export default function MetricsScreen() {
       <Text>항목 수: {item.metadata.itemCount}</Text>
       <Text>평균 FPS: {item.metadata.summary.fps?.toFixed(1) || 'N/A'}</Text>
       <Text>메모리 사용량: {item.metadata.summary.memoryUsage?.toFixed(1) || 'N/A'}MB</Text>
+      <Text>렌더링 시간: {item.metadata.summary.renderTime?.toFixed(1) || 'N/A'}ms</Text>
+      <Text>전환 지연: {item.metadata.summary.transitionDelay?.toFixed(1) || 'N/A'}ms</Text>
     </View>
   );
 
