@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
-import FastImage from 'react-native-fast-image';
+import { Image } from 'expo-image';
 
 import { FeedItemData } from '@typedefs/feed';
 
@@ -33,10 +33,11 @@ export const FeedItem = memo(({ item }: FeedItemProps) => {
   return (
     <View style={styles.container}>
       {thumbnailUrl ? (
-        <FastImage
+        <Image
           style={styles.thumbnail}
           source={{ uri: thumbnailUrl }}
-          resizeMode={FastImage.resizeMode.cover}
+          contentFit="cover"
+          transition={1000}
         />
       ) : (
         <View style={styles.thumbnailPlaceholder}>
