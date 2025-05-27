@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
 
 import { getPerformanceTestResults } from '@utils/performanceStorage';
 
@@ -10,9 +10,15 @@ interface TestResult {
     itemCount: number;
     summary: {
       fps?: number;
+      frameDrops?: number;
       memoryUsage?: number;
-      renderTime?: number;
       transitionDelay?: number;
+      renderTime?: number;
+      videoAverageLoadTime?: number;
+      videoBufferingEvents?: number;
+      videoBufferingDuration?: number;
+      videoDroppedFrames?: number;
+      videoItemsCount?: number;
     };
   };
   detailData: any;
@@ -35,9 +41,26 @@ export default function MetricsScreen() {
       <Text style={styles.testName}>{item.metadata.testName}</Text>
       <Text>항목 수: {item.metadata.itemCount}</Text>
       <Text>평균 FPS: {item.metadata.summary.fps?.toFixed(1) || 'N/A'}</Text>
+      <Text>프레임 드롭: {item.metadata.summary.frameDrops || 'N/A'}</Text>
       <Text>메모리 사용량: {item.metadata.summary.memoryUsage?.toFixed(1) || 'N/A'}MB</Text>
       <Text>렌더링 시간: {item.metadata.summary.renderTime?.toFixed(1) || 'N/A'}ms</Text>
       <Text>전환 지연: {item.metadata.summary.transitionDelay?.toFixed(1) || 'N/A'}ms</Text>
+      {item.metadata.summary.videoItemsCount && item.metadata.summary.videoItemsCount > 0 && (
+        <>
+          <Text style={styles.videoMetricsTitle}>비디오 성능 지표</Text>
+          <Text>
+            비디오 평균 로드 시간: {item.metadata.summary.videoAverageLoadTime?.toFixed(1) || 'N/A'}
+            ms
+          </Text>
+          <Text>비디오 버퍼링 횟수: {item.metadata.summary.videoBufferingEvents || 'N/A'}회</Text>
+          <Text>
+            비디오 버퍼링 총 시간:{' '}
+            {item.metadata.summary.videoBufferingDuration?.toFixed(1) || 'N/A'}ms
+          </Text>
+          <Text>비디오 드롭된 프레임: {item.metadata.summary.videoDroppedFrames || 'N/A'}개</Text>
+          <Text>비디오 아이템 수: {item.metadata.summary.videoItemsCount || 'N/A'}개</Text>
+        </>
+      )}
     </View>
   );
 
@@ -77,5 +100,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
+  },
+  videoMetricsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 5,
   },
 });
