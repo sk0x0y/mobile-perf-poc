@@ -3,55 +3,91 @@ import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import { Image } from 'expo-image';
 
 import { FeedItemData } from '@typedefs/feed';
+import { VideoMetrics } from '@typedefs/video-metrics';
+
+import { VideoFeedItem } from './VideoFeedItem';
 
 const { width, height } = Dimensions.get('window');
 
 interface FeedItemProps {
   item: FeedItemData;
+  index: number;
+  focusedIndex?: number;
+  onVideoLoad?: () => void;
+  onVideoError?: (error: Error) => void;
+  onVideoMetricsUpdate?: (index: number, metrics: VideoMetrics) => void;
 }
 
-export const FeedItem = memo(({ item }: FeedItemProps) => {
-  let displayData = null;
-  if (item.feed) {
-    displayData = item.feed;
-  } else if (item.shortply && item.shortply.feedList && item.shortply.feedList.length > 0) {
-    displayData = item.shortply.feedList[0];
-  }
+export const FeedItem = memo(
+  ({
+    item,
+    index,
+    focusedIndex,
+    onVideoLoad,
+    onVideoError,
+    onVideoMetricsUpdate,
+  }: FeedItemProps) => {
+    // 피드 데이터 추출
+    let displayData = null;
+    if (item.feed) {
+      displayData = item.feed;
+    } else if (item.shortply && item.shortply.feedList && item.shortply.feedList.length > 0) {
+      displayData = item.shortply.feedList[0];
+    }
 
-  if (!displayData) {
+    if (!displayData) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.errorText}>Invalid item data</Text>
+        </View>
+      );
+    }
+
+    // 비디오 URL이 있는지 확인
+    const hasVideo = Boolean(displayData.videoUrl);
+
+    // 비디오가 있고 현재 포커스된 아이템인 경우에만 비디오 컴포넌트 렌더링
+    if (hasVideo) {
+      const isFocused = focusedIndex === index;
+      return (
+        <VideoFeedItem
+          item={item}
+          isFocused={isFocused}
+          onVideoLoad={onVideoLoad}
+          onVideoError={onVideoError}
+          onMetricsUpdate={metrics => onVideoMetricsUpdate?.(index, metrics)}
+        />
+      );
+    }
+
+    // 기존 이미지 표시 로직 유지
+    const thumbnailUrl = displayData.thumbnailUrl;
+    const contentText =
+      displayData.content || (item.shortply?.hashtag ? `#${item.shortply.hashtag.name}` : '');
+
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Invalid item data</Text>
+        {thumbnailUrl ? (
+          <Image
+            style={styles.thumbnail}
+            source={{ uri: thumbnailUrl }}
+            contentFit="cover"
+            transition={1000}
+          />
+        ) : (
+          <View style={styles.thumbnailPlaceholder}>
+            <Text style={styles.placeholderText}>No Image</Text>
+          </View>
+        )}
+        {contentText ? (
+          <View style={styles.overlay}>
+            <Text style={styles.overlayText}>{contentText}</Text>
+          </View>
+        ) : null}
       </View>
     );
   }
-
-  const thumbnailUrl = displayData.thumbnailUrl;
-  const contentText =
-    displayData.content || (item.shortply?.hashtag ? `#${item.shortply.hashtag.name}` : '');
-
-  return (
-    <View style={styles.container}>
-      {thumbnailUrl ? (
-        <Image
-          style={styles.thumbnail}
-          source={{ uri: thumbnailUrl }}
-          contentFit="cover"
-          transition={1000}
-        />
-      ) : (
-        <View style={styles.thumbnailPlaceholder}>
-          <Text style={styles.placeholderText}>No Image</Text>
-        </View>
-      )}
-      {contentText ? (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayText}>{contentText}</Text>
-        </View>
-      ) : null}
-    </View>
-  );
-});
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -62,13 +98,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   thumbnail: {
-    width: '100%',
-    height: '100%',
+    width,
+    height,
   },
   thumbnailPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#ccc',
+    width,
+    height,
+    backgroundColor: '#222',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -89,9 +125,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   errorText: {
-    color: 'red',
+    color: '#f00',
     fontSize: 18,
   },
 });
-
-export default FeedItem;
