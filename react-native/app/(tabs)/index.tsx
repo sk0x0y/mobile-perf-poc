@@ -32,7 +32,7 @@ export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>성능 테스트 앱</Text>
-      <Text style={styles.subtitle}>원하는 테스트를 선택하세요.</Text>
+      <Text style={styles.subtitle}>각 리스트 컴포넌트별 성능 테스트 (이미지 및 비디오 포함)</Text>
 
       <View style={styles.buttonContainer}>
         <Button title="FlatList 테스트 시작" onPress={() => startTest('FlatList Test')} />
@@ -49,6 +49,8 @@ export default function HomeScreen() {
           onPress={() => startTest('VirtualizedList Test')}
         />
       </View>
+
+      <Text style={styles.note}>* 테스트에는 이미지 및 비디오 성능이 모두 포함됩니다.</Text>
 
       <Link href="/metrics" asChild>
         <Button title="측정 결과 보기" />
@@ -76,5 +78,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginVertical: 8,
     width: '80%',
+  },
+  note: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 20,
+    textAlign: 'center',
   },
 });
