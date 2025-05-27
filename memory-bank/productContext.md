@@ -2,11 +2,11 @@
 
 ## Purpose
 
-The primary purpose of this project is to serve as a proof-of-concept and testing ground for comparing the performance of React Native and Flutter in rendering complex lists with real-world data, and to provide objective data for technical stack decision-making.
+The primary purpose of this project is to serve as a proof-of-concept and testing ground for comparing the performance of React Native and Flutter in rendering complex lists with real-world data, and to provide objective data for technical stack decision-making. This also includes evaluating video playback performance.
 
 ## Problem Solved
 
-This project aims to solve the problem of poor performance (lagging, stuttering, high memory usage) often encountered when rendering long lists of complex items in mobile applications. By using a realistic data source and implementing various list rendering techniques and optimizations, we can demonstrate best practices and measure their impact.
+This project aims to solve the problem of poor performance (lagging, stuttering, high memory usage) often encountered when rendering long lists of complex items in mobile applications. By using a realistic data source and implementing various list rendering techniques and optimizations, we can demonstrate best practices and measure their impact. This now extends to addressing issues related to video playback stability and performance.
 
 ## How it Should Work
 
@@ -15,8 +15,8 @@ The application should:
 - Load and display a large dataset from `docs/data.json`.
 - Provide different screens to showcase list rendering using `FlatList`, `FlashList`, `SectionList`, and `VirtualizedList` in React Native, and equivalent implementations in Flutter.
 - Allow users to interact with the lists (scrolling).
-- Display real-time or near-real-time performance metrics (render time, memory usage, FPS, frame drops, transition latency) during list interactions for both frameworks.
-- Highlight the performance differences between React Native and Flutter implementations, as well as between different list implementations and optimization techniques within each framework.
+- Display real-time or near-real-time performance metrics (render time, memory usage, FPS, frame drops, transition latency, **video load time, buffering events, buffering duration, dropped video frames**) during list interactions for both frameworks.
+- Highlight the performance differences between React Native and Flutter implementations, as well as between different list implementations and optimization techniques within each framework. This now includes video playback performance.
 
 ## User Experience Goals
 
@@ -24,3 +24,4 @@ The application should:
 - Scrolling through lists should be fluid without noticeable lag or stuttering.
 - Performance metrics should be easily accessible and understandable.
 - The application should demonstrate the benefits of performance optimization in a clear and visual manner.
+- **Video playback should be stable and smooth, without crashes or excessive buffering.**

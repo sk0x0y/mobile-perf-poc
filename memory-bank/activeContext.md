@@ -31,6 +31,7 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **Implemented automated test script**: Added `AutomatedFeedTest` component to `app/(tabs)/index.tsx` for running various list tests.
 - **Implemented performance metrics display**: Updated `app/(tabs)/metrics.tsx` to show collected performance data.
 - **Resolved `react-native-device-info` native module error**: Replaced `measureMemoryUsage` in `src/utils/performance.ts` with a dummy implementation to simulate memory usage, bypassing the native module issue in managed workflow.
+- **비디오 플레이어 오류 해결**: `VideoFeedItem.tsx`에서 `VideoPlayer` 인스턴스 참조 관리 및 정리 로직을 개선하여 "Cannot use shared object that was already released" 오류 해결. `useRef`를 활용하여 `player` 객체에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 수정.
 
 ## Next Steps
 
@@ -53,7 +54,6 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **`FeedItem.tsx` 업데이트**: 비디오 콘텐츠 유무에 따라 `VideoFeedItem` 또는 이미지 컴포넌트를 조건부 렌더링하도록 수정했습니다.
 - **`AutomatedFeedTest.tsx` 업데이트**: 비디오 성능 측정 로직을 통합하고, `FeedItem`에 필요한 props를 전달하도록 수정했습니다.
 - **`index.tsx` 업데이트**: 테스트 시작 화면의 설명을 업데이트하여 비디오 성능 테스트가 포함됨을 명시했습니다.
-- **PNPM 워크스페이스 설정**: 프로젝트 루트에 `pnpm-workspace.yaml` 파일을 생성하여 `pnpm` 워크스페이스를 설정했습니다.
 - **Watchman 관련 오류 해결**: Watchman 서비스 재시작을 통해 프로젝트 실행 시 발생하던 오류 해결.
 
 ## Next Steps
@@ -72,7 +72,6 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - The structure of `docs/data.json` is complex; the current type definitions might need further refinement.
 - **`react-native-device-info` native module issue**: Decided to use a dummy implementation for memory usage measurement in `src/utils/performance.ts` to allow continued development in the managed workflow. A full native module solution would require switching to a development build (`npx expo prebuild`).
 - **`expo-router` default export warning**: `WARN Route "./(tabs)/index.tsx" is missing the required default export.` This warning persists despite verifying the `index.tsx` and `_layout.tsx` files. It is currently considered a non-blocking issue, possibly related to Expo's internal caching or `expo-router` version.
-- **PNPM 워크스페이스 설정**: `pnpm-workspace.yaml` 파일을 프로젝트 루트에 생성하여 워크스페이스를 설정했으나, `pnpm -F` 명령어가 여전히 프로젝트를 찾지 못하는 문제가 발생하고 있습니다. 이는 `pnpm`의 워크스페이스 인식 방식 또는 추가 설정이 필요함을 시사합니다.
 
 ## Learnings and Project Insights
 

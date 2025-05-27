@@ -15,10 +15,10 @@
 - **FastImage**: A performant image loading component for React Native.
 - **React Native Reanimated**: An animation library for React Native.
 - **Zustand**: A state management solution for React Native.
-- **React Hook Form**: A forms library for React Native.
 - **Date-fns**: A date utility library for React Native.
 - **Flutter DevTools**: Performance and debugging tools for Flutter.
 - **Impeller**: Flutter's rendering engine.
+- **`expo-video`**: 비디오 재생 기능을 위한 라이브러리.
 
 ## Development Setup
 

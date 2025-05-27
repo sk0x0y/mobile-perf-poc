@@ -53,6 +53,7 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 - **React Native Performance Libraries**: Integrated for measuring and monitoring app performance.
 - **Expo Image**: Used for optimized image loading and caching, replacing `FastImage` due to better compatibility with Expo and ongoing maintenance.
 - **Zustand**: Planned for state management (lightweight and flexible).
+- **`expo-video` 통합**: `VideoFeedItem.tsx` 컴포넌트에서 `useVideoPlayer` 훅을 사용하여 비디오 재생 기능을 통합.
 
 ## Design Patterns
 
@@ -67,6 +68,7 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 - **List Rendering Pipeline**: Loading data from `docs/data.json`, passing it to list components, rendering items, and measuring performance during scrolling.
 - **Performance Monitoring Integration**: Capturing performance metrics using `react-native-performance` and displaying them via the `PerformanceMetrics` component.
 - **Navigation Flow**: Ensuring smooth transitions between tabs and list test screens using Expo Router.
+- **비디오 재생 및 성능 측정**: `VideoFeedItem.tsx`에서 `useVideoPlayer`를 통해 비디오를 재생하고, `useVideoPerformanceMetrics` 훅을 통해 로드 시간, 버퍼링, 드롭된 프레임 등의 성능 지표를 측정.
 
 ## Important Patterns and Preferences
 
@@ -75,3 +77,4 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 - Use of TypeScript for strong typing.
 - Adherence to configured ESLint and Prettier rules.
 - Organized imports using path aliases and Barrel Pattern.
+- **비디오 플레이어 인스턴스 관리**: `VideoFeedItem.tsx` 내에서 `useRef`를 사용하여 `VideoPlayer` 인스턴스에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 구현. 컴포넌트 언마운트 시 `player` 리소스를 안전하게 정리.

@@ -28,7 +28,7 @@
 - **`expo-video` 통합**: `app.json`에 `expo-video` 플러그인 추가 및 `VideoFeedItem.tsx` 컴포넌트 구현을 통해 비디오 재생 기능이 통합되었습니다.
 - **비디오 성능 측정 구현**: `useVideoPerformanceMetrics` 훅을 통해 비디오 로딩 및 재생 성능 측정이 구현되었으며, `metrics.tsx` 화면에 관련 지표가 표시됩니다.
 - **`FeedItem.tsx` 및 `AutomatedFeedTest.tsx` 업데이트**: 비디오 콘텐츠를 포함한 피드 아이템 렌더링 및 테스트 로직이 업데이트되었습니다.
-- **PNPM 워크스페이스 설정**: 프로젝트 루트에 `pnpm-workspace.yaml` 파일이 생성되어 워크스페이스 설정이 완료되었습니다.
+- **비디오 플레이어 오류 해결**: `VideoFeedItem.tsx`에서 `VideoPlayer` 인스턴스 참조 관리 및 정리 로직을 개선하여 "Cannot use shared object that was already released" 오류 해결. `useRef`를 활용하여 `player` 객체에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 수정.
 
 ## What's Left to Build
 
@@ -40,8 +40,6 @@
 - Implementation of service functions (API, storage) in both frameworks.
 - Integration of performance metrics display in the UI for both applications.
 - Setting up and running automated performance tests for both frameworks.
-- Analyzing performance test results and documenting findings in `memory-bank/progress.md`.
-- Preparing a report comparing the performance of React Native and Flutter based on the test results.
 - **PNPM 워크스페이스 문제 해결**: `pnpm -F react-native start` 명령이 여전히 "No projects matched the filters" 오류를 발생시키는 문제에 대한 추가 조사 및 해결.
 
 ## Current Status
