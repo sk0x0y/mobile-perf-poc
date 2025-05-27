@@ -6,6 +6,15 @@ export const loadFeedData = async (): Promise<FeedItemData[]> => {
   return localFeedData as FeedItemData[];
 };
 
+export const loadPagedFeedData = async (
+  page: number,
+  pageSize: number
+): Promise<FeedItemData[]> => {
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  return localFeedData.slice(startIndex, endIndex) as FeedItemData[];
+};
+
 export const generateTestData = (count: number): FeedItemData[] => {
   if (count <= 0) {
     return [];

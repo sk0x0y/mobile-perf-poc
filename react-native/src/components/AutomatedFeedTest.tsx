@@ -16,7 +16,7 @@ import { FeedItemData } from '@typedefs/feed';
 import { VideoMetrics } from '@typedefs/video-metrics';
 
 import { saveTestMetadata, saveDetailedPerformanceData } from '@utils/performanceStorage';
-import { loadFeedData, generateTestData } from '@utils/data-generator';
+import { loadFeedData, generateTestData, loadPagedFeedData } from '@utils/data-generator'; // loadPagedFeedData 추가
 
 import { usePerformanceMetrics } from '@hooks/usePerformanceMetrics';
 import { useVideoPerformanceMetrics } from '@hooks/useVideoPerformanceMetrics';
@@ -24,6 +24,9 @@ import { useVideoPerformanceMetrics } from '@hooks/useVideoPerformanceMetrics';
 import { FeedItem } from '@components/common/FeedItem';
 
 const { height } = Dimensions.get('window');
+
+const INITIAL_PAGE_SIZE = 20; // 초기 로드할 아이템 수
+const PAGE_SIZE = 10; // 한 번에 로드할 아이템 수
 
 interface AutomatedFeedTestProps {
   testName: string;
@@ -54,6 +57,9 @@ export function AutomatedFeedTest({
   const [results, setResults] = useState<any>(null);
   const [feedData, setFeedData] = useState<FeedItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+  const [hasMoreData, setHasMoreData] = useState(true); // 더 로드할 데이터가 있는지
+  const [isFetchingMoreData, setIsFetchingMoreData] = useState(false); // 데이터 로드 중인지
 
   const listRef = useRef<
     FlatList | FlashList<FeedItemData> | SectionList | VirtualizedList<FeedItemData> | any
@@ -74,26 +80,47 @@ export function AutomatedFeedTest({
   const performanceData = useRef<PerformanceDataItem[]>([]);
   const testStartTime = useRef(0);
 
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const data = itemCount >= 1000 ? generateTestData(itemCount) : await loadFeedData();
-        setFeedData(data);
-        if (data.length < itemCount) {
-          console.warn(
-            `Loaded data count (${data.length}) is less than itemCount (${itemCount}). Adjusting itemCount.`
-          );
-        }
-      } catch (error) {
-        console.error('Failed to load feed data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadInitialData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await loadPagedFeedData(1, INITIAL_PAGE_SIZE);
+      setFeedData(data);
+      setCurrentPage(1);
+      setHasMoreData(data.length === INITIAL_PAGE_SIZE); // 초기 로드된 데이터가 INITIAL_PAGE_SIZE와 같으면 더 있을 수 있음
+    } catch (error) {
+      console.error('Failed to load initial feed data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    loadData();
-  }, [itemCount]);
+  useEffect(() => {
+    loadInitialData();
+  }, []); // itemCount 의존성 제거
+
+  const handleLoadMore = useCallback(async () => {
+    if (isFetchingMoreData || !hasMoreData) {
+      return;
+    }
+
+    setIsFetchingMoreData(true);
+    try {
+      const nextPage = currentPage + 1;
+      const newData = await loadPagedFeedData(nextPage, PAGE_SIZE);
+      if (newData.length > 0) {
+        setFeedData(prevData => [...prevData, ...newData]);
+        setCurrentPage(nextPage);
+        setHasMoreData(newData.length === PAGE_SIZE); // 로드된 데이터가 PAGE_SIZE와 같으면 더 있을 수 있음
+      } else {
+        setHasMoreData(false); // 더 이상 로드할 데이터가 없음
+      }
+    } catch (error) {
+      console.error('Failed to load more feed data:', error);
+      setHasMoreData(false); // 오류 발생 시 더 이상 로드하지 않음
+    } finally {
+      setIsFetchingMoreData(false);
+    }
+  }, [currentPage, hasMoreData, isFetchingMoreData]);
 
   const runTest = async () => {
     if (isRunning || isLoading || feedData.length === 0) return;
@@ -107,10 +134,11 @@ export function AutomatedFeedTest({
 
     startMeasuring();
 
-    const actualItemCount = Math.min(itemCount, feedData.length);
+    let currentScrollIndex = 0;
+    const totalItemsToScroll = itemCount; // itemCount는 이제 스크롤할 총 아이템 수
 
-    for (let i = 0; i < actualItemCount; i++) {
-      setCurrentIndex(i);
+    while (currentScrollIndex < totalItemsToScroll && hasMoreData) {
+      setCurrentIndex(currentScrollIndex);
 
       startTransition();
 
@@ -118,13 +146,13 @@ export function AutomatedFeedTest({
         if (testName === 'SectionList Test') {
           listRef.current.scrollToLocation({
             sectionIndex: 0,
-            itemIndex: i,
+            itemIndex: currentScrollIndex,
             animated: false,
             viewOffset: 0,
             viewPosition: 0,
           });
         } else {
-          listRef.current.scrollToIndex({ index: i, animated: false });
+          listRef.current.scrollToIndex({ index: currentScrollIndex, animated: false });
         }
       }
 
@@ -134,7 +162,7 @@ export function AutomatedFeedTest({
 
       performanceData.current.push({
         time: performance.now() - testStartTime.current,
-        pageIndex: i,
+        pageIndex: currentScrollIndex,
         fps: getCurrentFps(),
         frameDrops: getDroppedFrames(),
         memoryUsage: getMemoryUsage(),
@@ -142,7 +170,18 @@ export function AutomatedFeedTest({
         renderTime: getCurrentRenderTime(),
       });
 
-      setProgress(Math.round(((i + 1) / actualItemCount) * 100));
+      currentScrollIndex++;
+      setProgress(Math.round((currentScrollIndex / totalItemsToScroll) * 100));
+
+      // 다음 페이지 로드가 필요한 시점 감지 및 호출
+      // 예를 들어, 현재 스크롤 인덱스가 로드된 데이터의 끝에 가까워지면 handleLoadMore 호출
+      if (
+        currentScrollIndex >= feedData.length - PAGE_SIZE / 2 &&
+        hasMoreData &&
+        !isFetchingMoreData
+      ) {
+        await handleLoadMore(); // 데이터 로드를 기다림
+      }
     }
 
     stopMeasuring();
@@ -185,7 +224,7 @@ export function AutomatedFeedTest({
     const metaData = {
       testName,
       timestamp: Date.now(),
-      itemCount: actualItemCount,
+      itemCount: totalItemsToScroll, // 변경된 itemCount 사용
       swipeDuration,
       summary: aggregatedMetrics,
     };
@@ -263,6 +302,8 @@ export function AutomatedFeedTest({
               offset: height * index,
               index,
             })}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
           />
         );
       case 'FlashList Test':
@@ -283,6 +324,8 @@ export function AutomatedFeedTest({
               }
               return 'unknown';
             }}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
           />
         );
       case 'SectionList Test':
@@ -308,6 +351,8 @@ export function AutomatedFeedTest({
                 <Text style={styles.sectionHeaderText}>{title}</Text>
               </View>
             )}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
           />
         );
       case 'VirtualizedList Test':
@@ -330,6 +375,8 @@ export function AutomatedFeedTest({
               offset: height * index,
               index,
             })}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
           />
         );
       default:
