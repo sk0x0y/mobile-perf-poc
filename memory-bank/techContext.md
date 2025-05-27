@@ -12,7 +12,9 @@
 - **Prettier**: A code formatter for React Native code.
 - **Expo Router**: A file-based router for React Native navigation.
 - **React Native Performance**: A library for measuring React Native performance.
-- **FastImage**: A performant image loading component for React Native.
+- **Expo Image**: Used for optimized image loading and caching, replacing `FastImage` due to better compatibility with Expo and ongoing maintenance.
+- **@react-native-async-storage/async-storage**: AsyncStorage for persistent key-value storage.
+- **expo-file-system**: FileSystem for local file operations.
 - **React Native Reanimated**: An animation library for React Native.
 - **Zustand**: A state management solution for React Native.
 - **Date-fns**: A date utility library for React Native.

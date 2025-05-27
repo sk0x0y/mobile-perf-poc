@@ -29,6 +29,8 @@
 - **비디오 성능 측정 구현**: `useVideoPerformanceMetrics` 훅을 통해 비디오 로딩 및 재생 성능 측정이 구현되었으며, `metrics.tsx` 화면에 관련 지표가 표시됩니다.
 - **`FeedItem.tsx` 및 `AutomatedFeedTest.tsx` 업데이트**: 비디오 콘텐츠를 포함한 피드 아이템 렌더링 및 테스트 로직이 업데이트되었습니다.
 - **비디오 플레이어 오류 해결**: `VideoFeedItem.tsx`에서 `VideoPlayer` 인스턴스 참조 관리 및 정리 로직을 개선하여 "Cannot use shared object that was already released" 오류 해결. `useRef`를 활용하여 `player` 객체에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 수정.
+- **성능 결과 삭제 기능 구현**: `metrics.tsx` 화면에서 사용자가 개별 또는 전체 성능 테스트 결과를 삭제할 수 있는 기능 추가. (`performanceStorage.ts`에 관련 로직 구현)
+- **성능 결과 즉시 로딩**: `metrics.tsx` 화면이 포커스될 때마다 최신 성능 결과를 로드하도록 `useFocusEffect` 적용.
 
 ## What's Left to Build
 
@@ -40,18 +42,16 @@
 - Implementation of service functions (API, storage) in both frameworks.
 - Integration of performance metrics display in the UI for both applications.
 - Setting up and running automated performance tests for both frameworks.
-- **PNPM 워크스페이스 문제 해결**: `pnpm -F react-native start` 명령이 여전히 "No projects matched the filters" 오류를 발생시키는 문제에 대한 추가 조사 및 해결.
 
 ## Current Status
 
-The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다. PNPM 워크스페이스 설정은 완료되었으나, `pnpm -F` 명령어로 프로젝트를 시작하는 데 문제가 있어 추가 조사가 필요합니다.
+The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. **성능 결과 탭 개선 작업도 완료되었습니다.** 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다.
 
 ## Known Issues
 
 - **JavaScript 기반 FPS 측정 구현**: `requestAnimationFrame`을 활용한 FPS 및 프레임 드롭 측정 기능을 순수 JavaScript로 구현하여 Expo 관리형 워크플로우의 제한을 우회.
 - **성능 측정 인프라 개선**: `usePerformanceMetrics` 훅에 getter 함수들을 추가하여 비동기 상태 업데이트로 인한 데이터 수집 문제 해결.
 - **Watchman 서비스 관련 오류 해결**: 프로젝트 실행 시 발생하던 권한 관련 오류를 Watchman 서비스 재시작으로 해결.
-- **PNPM 워크스페이스 문제**: `pnpm-workspace.yaml` 파일이 루트에 생성되었음에도 불구하고 `pnpm -F react-native start` 명령이 "No projects matched the filters" 오류를 발생시킵니다. 이는 `pnpm` 워크스페이스 설정 또는 사용법에 대한 추가 조사가 필요함을 의미합니다.
 
 ## Known Issues
 

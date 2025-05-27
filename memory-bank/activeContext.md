@@ -32,6 +32,8 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **Implemented performance metrics display**: Updated `app/(tabs)/metrics.tsx` to show collected performance data.
 - **Resolved `react-native-device-info` native module error**: Replaced `measureMemoryUsage` in `src/utils/performance.ts` with a dummy implementation to simulate memory usage, bypassing the native module issue in managed workflow.
 - **비디오 플레이어 오류 해결**: `VideoFeedItem.tsx`에서 `VideoPlayer` 인스턴스 참조 관리 및 정리 로직을 개선하여 "Cannot use shared object that was already released" 오류 해결. `useRef`를 활용하여 `player` 객체에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 수정.
+- **성능 결과 삭제 기능 구현**: `performanceStorage.ts`에 전체/개별 결과 삭제 로직 추가 및 `metrics.tsx`에 관련 UI 및 기능 연동 완료.
+- **성능 결과 즉시 로딩 개선**: `metrics.tsx`에 `useFocusEffect`를 적용하여 탭 포커스 시 최신 결과가 로드되도록 수정.
 
 ## Next Steps
 
@@ -47,6 +49,8 @@ The current focus is on integrating `expo-video` for video playback, implementin
 ## Active Decisions and Considerations
 
 - Using `@ts-ignore` as a temporary workaround for `react-native-performance` TypeScript errors. A more permanent solution is needed.
+- **성능 결과 삭제 시 사용자 확인 절차 추가**: 실수로 인한 데이터 삭제를 방지하기 위해 `Alert.alert`를 통한 확인 대화상자를 구현했습니다.
+- **`useFocusEffect`를 사용하여 결과 목록 즉시 업데이트 결정**: `metrics.tsx` 화면이 포커스될 때마다 최신 성능 결과를 로드하여 사용자 경험을 개선했습니다.
 - **JavaScript 기반 FPS 측정 구현**: 네이티브 의존성 없이 `requestAnimationFrame`을 사용한 FPS 측정 기능을 `performance.ts`에 구현하고 `usePerformanceMetrics` 훅을 통해 통합.
 - **성능 메트릭스 데이터 수집 개선**: getter 함수들(`getCurrentFps`, `getDroppedFrames`, `getCurrentRenderTime`, `getCurrentTransitionDelay`)을 추가하여 비동기 상태 업데이트 문제를 해결하고 정확한 성능 데이터 수집 보장.
 - **`expo-video` 통합**: `app.json`에 `expo-video` 플러그인을 추가하고, `VideoFeedItem.tsx` 컴포넌트를 구현하여 비디오 재생 기능을 통합했습니다.
@@ -62,7 +66,6 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - 각 리스트 구현체 간의 성능 비교 분석 및 결과 시각화.
 - 측정된 데이터의 통계적 분석 및 보고서 작성.
 - **비디오 성능 테스트 및 검증**: 통합된 비디오 재생 및 성능 측정 기능이 올바르게 작동하는지 확인하고, 실제 기기 또는 에뮬레이터에서 성능 테스트를 수행합니다.
-- **PNPM 워크스페이스 문제 해결**: `pnpm -F react-native start` 명령이 여전히 "No projects matched the filters" 오류를 발생시키는 문제에 대한 추가 조사 및 해결.
 
 ## Active Decisions and Considerations
 
@@ -81,3 +84,5 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - Understanding how Expo Router handles file-based routing is critical for proper project structuring and avoiding unnecessary warnings.
 - Careful management of `default` vs. `named` exports is important when using barrel files and module aliases.
 - **Managed workflow limitations**: Direct use of certain native modules like `react-native-device-info` is restricted in Expo's managed workflow, necessitating workarounds or a switch to development builds.
+- **AsyncStorage와 FileSystem을 함께 사용하여 데이터를 관리할 때 일관성 유지의 중요성**: 성능 결과 삭제 기능 구현 시 두 저장소 간의 데이터 일관성을 유지하는 것이 중요함을 확인했습니다.
+- **Expo Router의 `useFocusEffect`를 활용한 화면 업데이트 전략의 유용성**: 탭 전환 시 최신 데이터를 즉시 반영하는 데 `useFocusEffect`가 매우 효과적임을 확인했습니다.
