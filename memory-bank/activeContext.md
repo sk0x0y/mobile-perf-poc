@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-The current focus is on implementing the React Native feed rendering performance test plan, including integrating `expo-image`, optimizing `FlashList`, and setting up automated performance measurements.
+The current focus is on integrating `expo-video` for video playback, implementing video performance measurement, and refining the overall list rendering performance test plan in React Native.
 
 ## Recent Changes
 
@@ -48,6 +48,12 @@ The current focus is on implementing the React Native feed rendering performance
 - Using `@ts-ignore` as a temporary workaround for `react-native-performance` TypeScript errors. A more permanent solution is needed.
 - **JavaScript 기반 FPS 측정 구현**: 네이티브 의존성 없이 `requestAnimationFrame`을 사용한 FPS 측정 기능을 `performance.ts`에 구현하고 `usePerformanceMetrics` 훅을 통해 통합.
 - **성능 메트릭스 데이터 수집 개선**: getter 함수들(`getCurrentFps`, `getDroppedFrames`, `getCurrentRenderTime`, `getCurrentTransitionDelay`)을 추가하여 비동기 상태 업데이트 문제를 해결하고 정확한 성능 데이터 수집 보장.
+- **`expo-video` 통합**: `app.json`에 `expo-video` 플러그인을 추가하고, `VideoFeedItem.tsx` 컴포넌트를 구현하여 비디오 재생 기능을 통합했습니다.
+- **비디오 성능 측정**: `useVideoPerformanceMetrics` 훅을 통해 비디오 로딩 및 재생 성능을 측정하고, `metrics.tsx` 화면에 표시하도록 구현했습니다.
+- **`FeedItem.tsx` 업데이트**: 비디오 콘텐츠 유무에 따라 `VideoFeedItem` 또는 이미지 컴포넌트를 조건부 렌더링하도록 수정했습니다.
+- **`AutomatedFeedTest.tsx` 업데이트**: 비디오 성능 측정 로직을 통합하고, `FeedItem`에 필요한 props를 전달하도록 수정했습니다.
+- **`index.tsx` 업데이트**: 테스트 시작 화면의 설명을 업데이트하여 비디오 성능 테스트가 포함됨을 명시했습니다.
+- **PNPM 워크스페이스 설정**: 프로젝트 루트에 `pnpm-workspace.yaml` 파일을 생성하여 `pnpm` 워크스페이스를 설정했습니다.
 - **Watchman 관련 오류 해결**: Watchman 서비스 재시작을 통해 프로젝트 실행 시 발생하던 오류 해결.
 
 ## Next Steps
@@ -55,6 +61,8 @@ The current focus is on implementing the React Native feed rendering performance
 - 구현된 JavaScript 기반 FPS 측정을 활용한 데이터 수집 및 분석 수행.
 - 각 리스트 구현체 간의 성능 비교 분석 및 결과 시각화.
 - 측정된 데이터의 통계적 분석 및 보고서 작성.
+- **비디오 성능 테스트 및 검증**: 통합된 비디오 재생 및 성능 측정 기능이 올바르게 작동하는지 확인하고, 실제 기기 또는 에뮬레이터에서 성능 테스트를 수행합니다.
+- **PNPM 워크스페이스 문제 해결**: `pnpm -F react-native start` 명령이 여전히 "No projects matched the filters" 오류를 발생시키는 문제에 대한 추가 조사 및 해결.
 
 ## Active Decisions and Considerations
 
@@ -64,6 +72,7 @@ The current focus is on implementing the React Native feed rendering performance
 - The structure of `docs/data.json` is complex; the current type definitions might need further refinement.
 - **`react-native-device-info` native module issue**: Decided to use a dummy implementation for memory usage measurement in `src/utils/performance.ts` to allow continued development in the managed workflow. A full native module solution would require switching to a development build (`npx expo prebuild`).
 - **`expo-router` default export warning**: `WARN Route "./(tabs)/index.tsx" is missing the required default export.` This warning persists despite verifying the `index.tsx` and `_layout.tsx` files. It is currently considered a non-blocking issue, possibly related to Expo's internal caching or `expo-router` version.
+- **PNPM 워크스페이스 설정**: `pnpm-workspace.yaml` 파일을 프로젝트 루트에 생성하여 워크스페이스를 설정했으나, `pnpm -F` 명령어가 여전히 프로젝트를 찾지 못하는 문제가 발생하고 있습니다. 이는 `pnpm`의 워크스페이스 인식 방식 또는 추가 설정이 필요함을 시사합니다.
 
 ## Learnings and Project Insights
 

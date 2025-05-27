@@ -25,6 +25,10 @@
 - **Detailed performance metrics collection implemented**: Memory usage measurement using a dummy implementation in `performance.ts` and integrated into `usePerformanceMetrics` hook.
 - **Performance measurement results screen implemented**: `app/(tabs)/metrics.tsx` now displays collected performance data.
 - **Test automation script implemented**: `app/(tabs)/index.tsx` now includes buttons to trigger automated tests using `AutomatedFeedTest`.
+- **`expo-video` 통합**: `app.json`에 `expo-video` 플러그인 추가 및 `VideoFeedItem.tsx` 컴포넌트 구현을 통해 비디오 재생 기능이 통합되었습니다.
+- **비디오 성능 측정 구현**: `useVideoPerformanceMetrics` 훅을 통해 비디오 로딩 및 재생 성능 측정이 구현되었으며, `metrics.tsx` 화면에 관련 지표가 표시됩니다.
+- **`FeedItem.tsx` 및 `AutomatedFeedTest.tsx` 업데이트**: 비디오 콘텐츠를 포함한 피드 아이템 렌더링 및 테스트 로직이 업데이트되었습니다.
+- **PNPM 워크스페이스 설정**: 프로젝트 루트에 `pnpm-workspace.yaml` 파일이 생성되어 워크스페이스 설정이 완료되었습니다.
 
 ## What's Left to Build
 
@@ -35,20 +39,21 @@
 - Implementation of utility functions (data generation, formatting, validation) in both frameworks.
 - Implementation of service functions (API, storage) in both frameworks.
 - Integration of performance metrics display in the UI for both applications.
-- Addressing the peer dependency warning for `react-native-fast-image` in the React Native project. (Note: This will be resolved by switching to `expo-image`).
 - Setting up and running automated performance tests for both frameworks.
 - Analyzing performance test results and documenting findings in `memory-bank/progress.md`.
 - Preparing a report comparing the performance of React Native and Flutter based on the test results.
+- **PNPM 워크스페이스 문제 해결**: `pnpm -F react-native start` 명령이 여전히 "No projects matched the filters" 오류를 발생시키는 문제에 대한 추가 조사 및 해결.
 
 ## Current Status
 
-The React Native project's foundational structure and configuration are now largely complete, with major setup and warning issues resolved. The core functionality for performance measurement and list rendering tests is now implemented, with a dummy memory measurement for the managed workflow.
+The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다. PNPM 워크스페이스 설정은 완료되었으나, `pnpm -F` 명령어로 프로젝트를 시작하는 데 문제가 있어 추가 조사가 필요합니다.
 
 ## Known Issues
 
 - **JavaScript 기반 FPS 측정 구현**: `requestAnimationFrame`을 활용한 FPS 및 프레임 드롭 측정 기능을 순수 JavaScript로 구현하여 Expo 관리형 워크플로우의 제한을 우회.
 - **성능 측정 인프라 개선**: `usePerformanceMetrics` 훅에 getter 함수들을 추가하여 비동기 상태 업데이트로 인한 데이터 수집 문제 해결.
 - **Watchman 서비스 관련 오류 해결**: 프로젝트 실행 시 발생하던 권한 관련 오류를 Watchman 서비스 재시작으로 해결.
+- **PNPM 워크스페이스 문제**: `pnpm-workspace.yaml` 파일이 루트에 생성되었음에도 불구하고 `pnpm -F react-native start` 명령이 "No projects matched the filters" 오류를 발생시킵니다. 이는 `pnpm` 워크스페이스 설정 또는 사용법에 대한 추가 조사가 필요함을 의미합니다.
 
 ## Known Issues
 
