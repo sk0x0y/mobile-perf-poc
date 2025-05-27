@@ -34,6 +34,26 @@ export const VideoFeedItem = ({
   });
   const bufferingStartTime = useRef<number>(0);
 
+  const playerRef = useRef<VideoPlayer | null>(null);
+
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+
+      try {
+        if (playerRef.current) {
+          playerRef.current.pause();
+          playerRef.current = null;
+        }
+      } catch (error) {
+        console.log('Video cleanup on unmount error:', error);
+      }
+    };
+  }, []);
+
   let videoUrl: string | undefined;
   if (item.feed?.videoUrl) {
     videoUrl = item.feed.videoUrl;
@@ -49,68 +69,79 @@ export const VideoFeedItem = ({
     { uri: videoUrl, useCaching: true },
     useCallback((playerInstance: VideoPlayer) => {
       playerInstance.loop = true;
-
       loadStartTime.current = performance.now();
     }, [])
   );
 
   useEffect(() => {
-    if (!player) return;
+    playerRef.current = player;
+  }, [player]);
 
-    const statusSubscription = player.addListener('statusChange', ({ status, error }) => {
-      if (error) {
-        onVideoError?.(error as any);
-      }
+  useEffect(() => {
+    if (!playerRef.current) return;
 
-      // 첫 프레임 로드 완료 시 로드 시간 측정
-      if (status === 'readyToPlay' && metrics.current.loadTime === 0) {
-        metrics.current.loadTime = performance.now() - loadStartTime.current;
-        onMetricsUpdate?.(metrics.current);
-      }
+    const statusSubscription = playerRef.current.addListener(
+      'statusChange',
+      ({ status, error }) => {
+        if (error) {
+          onVideoError?.(error as any);
+        }
 
-      // 버퍼링 시작
-      if (status === 'loading' && bufferingStartTime.current === 0) {
-        bufferingStartTime.current = performance.now();
-        metrics.current.bufferingEvents += 1;
-      }
+        if (status === 'readyToPlay' && metrics.current.loadTime === 0) {
+          metrics.current.loadTime = performance.now() - loadStartTime.current;
+          onMetricsUpdate?.(metrics.current);
+        }
 
-      // 버퍼링 종료
-      if (status === 'readyToPlay' && bufferingStartTime.current > 0) {
-        const duration = performance.now() - bufferingStartTime.current;
-        metrics.current.bufferingDuration += duration;
-        bufferingStartTime.current = 0;
-        onMetricsUpdate?.(metrics.current);
+        if (status === 'loading' && bufferingStartTime.current === 0) {
+          bufferingStartTime.current = performance.now();
+          metrics.current.bufferingEvents += 1;
+        }
+
+        if (status === 'readyToPlay' && bufferingStartTime.current > 0) {
+          const duration = performance.now() - bufferingStartTime.current;
+          metrics.current.bufferingDuration += duration;
+          bufferingStartTime.current = 0;
+          onMetricsUpdate?.(metrics.current);
+        }
       }
-    });
+    );
 
     return () => {
       statusSubscription.remove();
     };
-  }, [player, onMetricsUpdate, onVideoError]);
+  }, [playerRef.current, onMetricsUpdate, onVideoError]);
 
   useEffect(() => {
-    if (isFocused) {
-      player.play();
-      setIsPlaying(true);
-    } else {
-      player.pause();
-      setIsPlaying(false);
-    }
+    if (!playerRef.current || !isMounted.current) return;
 
-    return () => {
-      player.pause();
-    };
-  }, [isFocused, player]);
+    try {
+      if (isFocused) {
+        playerRef.current.play();
+        setIsPlaying(true);
+      } else {
+        playerRef.current.pause();
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.log('Video playback control error:', error);
+    }
+  }, [isFocused, playerRef.current, isMounted.current]);
 
   const togglePlayback = useCallback(() => {
-    if (isPlaying) {
-      player.pause();
-      setIsPlaying(false);
-    } else {
-      player.play();
-      setIsPlaying(true);
+    if (!playerRef.current) return;
+
+    try {
+      if (isPlaying) {
+        playerRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        playerRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.log('Toggle playback error:', error);
     }
-  }, [isPlaying, player]);
+  }, [isPlaying, playerRef.current]);
 
   const toggleControls = useCallback(() => {
     setShowControls(prev => !prev);
