@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 
-import { getPerformanceTestResults } from '@utils/performanceStorage';
+import {
+  getPerformanceTestResults,
+  deletePerformanceResult,
+  clearAllPerformanceResults,
+} from '@utils/performanceStorage';
 
 interface TestResult {
   id: string;
@@ -27,18 +33,68 @@ interface TestResult {
 export default function MetricsScreen() {
   const [results, setResults] = useState<TestResult[]>([]);
 
-  useEffect(() => {
-    const loadResults = async () => {
-      const savedResults = await getPerformanceTestResults();
-      setResults(savedResults);
-    };
-
-    loadResults();
+  const loadResults = useCallback(async () => {
+    const savedResults = await getPerformanceTestResults();
+    setResults(savedResults);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadResults();
+    }, [loadResults])
+  );
+
+  const handleDeleteResult = useCallback(
+    (id: string) => {
+      Alert.alert('결과 삭제', '정말로 이 테스트 결과를 삭제하시겠습니까?', [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '삭제',
+          onPress: async () => {
+            const success = await deletePerformanceResult(id);
+            if (success) {
+              loadResults();
+            } else {
+              Alert.alert('오류', '결과 삭제에 실패했습니다.');
+            }
+          },
+        },
+      ]);
+    },
+    [loadResults]
+  );
+
+  const handleClearAllResults = useCallback(() => {
+    Alert.alert('모든 결과 삭제', '정말로 모든 테스트 결과를 삭제하시겠습니까?', [
+      {
+        text: '취소',
+        style: 'cancel',
+      },
+      {
+        text: '모두 삭제',
+        onPress: async () => {
+          const success = await clearAllPerformanceResults();
+          if (success) {
+            loadResults();
+          } else {
+            Alert.alert('오류', '모든 결과 삭제에 실패했습니다.');
+          }
+        },
+      },
+    ]);
+  }, [loadResults]);
 
   const renderResultItem = ({ item }: { item: TestResult }) => (
     <View style={styles.resultItem}>
-      <Text style={styles.testName}>{item.metadata.testName}</Text>
+      <View style={styles.resultHeader}>
+        <Text style={styles.testName}>{item.metadata.testName}</Text>
+        <TouchableOpacity onPress={() => handleDeleteResult(item.id)}>
+          <Ionicons name="trash-outline" size={24} color="red" />
+        </TouchableOpacity>
+      </View>
       <Text>항목 수: {item.metadata.itemCount}</Text>
       <Text>평균 FPS: {item.metadata.summary.fps?.toFixed(1) || 'N/A'}</Text>
       <Text>프레임 드롭: {item.metadata.summary.frameDrops || 'N/A'}</Text>
@@ -66,12 +122,20 @@ export default function MetricsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>성능 측정 결과</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>성능 측정 결과</Text>
+        {results.length > 0 && (
+          <TouchableOpacity onPress={handleClearAllResults} style={styles.clearButton}>
+            <Ionicons name="trash-bin-outline" size={24} color="gray" />
+            <Text style={styles.clearButtonText}>모두 지우기</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {results.length > 0 ? (
         <FlatList data={results} renderItem={renderResultItem} keyExtractor={item => item.id} />
       ) : (
-        <Text>저장된 테스트 결과가 없습니다.</Text>
+        <Text style={styles.noResultsText}>저장된 테스트 결과가 없습니다.</Text>
       )}
     </View>
   );
@@ -83,10 +147,27 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 16,
+  },
+  clearButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 5,
+    backgroundColor: '#f0f0f0',
+  },
+  clearButtonText: {
+    marginLeft: 4,
+    color: 'gray',
+    fontWeight: 'bold',
   },
   resultItem: {
     backgroundColor: '#f9f9f9',
@@ -96,15 +177,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee',
   },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   testName: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
   videoMetricsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 10,
     marginBottom: 5,
+  },
+  noResultsText: {
+    textAlign: 'center',
+    marginTop: 50,
+    fontSize: 16,
+    color: '#888',
   },
 });

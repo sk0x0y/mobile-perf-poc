@@ -12,6 +12,47 @@ export async function saveTestMetadata(testId: string, metadata: any) {
   }
 }
 
+export async function deletePerformanceResult(testId: string) {
+  try {
+    const metaKey = `perf_meta_${testId}`;
+    await AsyncStorage.removeItem(metaKey);
+
+    const dataPath = `${FileSystem.documentDirectory}perf_data_${testId}.json`;
+    await FileSystem.deleteAsync(dataPath, { idempotent: true });
+    console.log(`테스트 결과 삭제 완료: ${testId}`);
+    return true;
+  } catch (e) {
+    console.error(`테스트 결과 삭제 실패 (${testId}):`, e);
+    return false;
+  }
+}
+
+export async function clearAllPerformanceResults() {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const metaKeys = keys.filter(k => k.startsWith('perf_meta_'));
+
+    const fileDeletePromises = metaKeys.map(async key => {
+      const testId = key.replace('perf_meta_', '');
+      const dataPath = `${FileSystem.documentDirectory}perf_data_${testId}.json`;
+      try {
+        await FileSystem.deleteAsync(dataPath, { idempotent: true });
+      } catch (e) {
+        console.warn(`파일 시스템 데이터 삭제 실패 (${testId}):`, e);
+      }
+    });
+
+    await Promise.all(fileDeletePromises);
+    await AsyncStorage.multiRemove(metaKeys);
+
+    console.log('모든 테스트 결과 삭제 완료');
+    return true;
+  } catch (e) {
+    console.error('모든 테스트 결과 삭제 실패:', e);
+    return false;
+  }
+}
+
 export async function saveDetailedPerformanceData(testId: string, data: any) {
   try {
     const fileName = `${FileSystem.documentDirectory}perf_data_${testId}.json`;
