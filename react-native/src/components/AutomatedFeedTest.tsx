@@ -13,11 +13,13 @@ import {
 import { FlashList } from '@shopify/flash-list';
 
 import { FeedItemData } from '@typedefs/feed';
+import { VideoMetrics } from '@typedefs/video-metrics';
 
 import { saveTestMetadata, saveDetailedPerformanceData } from '@utils/performanceStorage';
 import { loadFeedData, generateTestData } from '@utils/data-generator';
 
 import { usePerformanceMetrics } from '@hooks/usePerformanceMetrics';
+import { useVideoPerformanceMetrics } from '@hooks/useVideoPerformanceMetrics';
 
 import { FeedItem } from '@components/common/FeedItem';
 
@@ -27,7 +29,7 @@ interface AutomatedFeedTestProps {
   testName: string;
   itemCount?: number;
   swipeDuration?: number;
-  onComplete?: (testId: string, results: any) => void;
+  onComplete?: (testId: string, results: any) => void; // results 타입은 나중에 더 구체화
 }
 
 interface PerformanceDataItem {
@@ -101,6 +103,7 @@ export function AutomatedFeedTest({
     setCurrentIndex(0);
     performanceData.current = [];
     testStartTime.current = performance.now();
+    resetMetrics();
 
     startMeasuring();
 
@@ -156,6 +159,9 @@ export function AutomatedFeedTest({
     );
     const totalRenderTime = performanceData.current.reduce((sum, data) => sum + data.renderTime, 0);
 
+    // 비디오 관련 지표 집계
+    const videoMetrics = getAggregatedMetrics();
+
     const aggregatedMetrics = {
       fps: performanceData.current.length > 0 ? totalFps / performanceData.current.length : 0,
       frameDrops: totalFrameDrops,
@@ -167,6 +173,11 @@ export function AutomatedFeedTest({
           : 0,
       renderTime:
         performanceData.current.length > 0 ? totalRenderTime / performanceData.current.length : 0,
+      videoAverageLoadTime: videoMetrics?.avgLoadTime || 0,
+      videoBufferingEvents: videoMetrics?.totalBufferingEvents || 0,
+      videoBufferingDuration: videoMetrics?.totalBufferingDuration || 0,
+      videoDroppedFrames: videoMetrics?.totalDroppedFrames || 0,
+      videoItemsCount: videoMetrics?.itemsWithVideo || 0,
     };
 
     const testId = `${testName}_${Date.now()}`;
@@ -187,9 +198,28 @@ export function AutomatedFeedTest({
     onComplete?.(testId, aggregatedMetrics);
   };
 
-  const renderFeedItem = useCallback(({ item, index }: { item: FeedItemData; index: number }) => {
-    return <FeedItem item={item} />;
-  }, []);
+  const { metricsData, updateMetrics, getAggregatedMetrics, resetMetrics } =
+    useVideoPerformanceMetrics();
+
+  const renderFeedItem = useCallback(
+    ({ item, index }: { item: FeedItemData; index: number }) => {
+      return (
+        <FeedItem
+          item={item}
+          index={index}
+          focusedIndex={currentIndex}
+          onVideoLoad={() => {
+            // 필요시 비디오 로드 완료 시점 기록
+          }}
+          onVideoError={error => {
+            console.error(`Video error at index ${index}:`, error);
+          }}
+          onVideoMetricsUpdate={updateMetrics}
+        />
+      );
+    },
+    [currentIndex, updateMetrics]
+  );
 
   const sectionListData = [{ title: 'Feed Items', data: feedData }];
 
@@ -322,6 +352,16 @@ export function AutomatedFeedTest({
             <Text>프레임 드롭: {metrics.frameDrops}</Text>
             <Text>메모리: {metrics.memoryUsage.toFixed(1)}MB</Text>
             <Text>전환 지연: {metrics.transitionDelay.toFixed(1)}ms</Text>
+            {metricsData[currentIndex] && (
+              <>
+                <Text>비디오 로드 시간: {metricsData[currentIndex].loadTime.toFixed(1)}ms</Text>
+                <Text>비디오 버퍼링 횟수: {metricsData[currentIndex].bufferingEvents}</Text>
+                <Text>
+                  비디오 버퍼링 시간: {metricsData[currentIndex].bufferingDuration.toFixed(1)}ms
+                </Text>
+                <Text>비디오 드롭 프레임: {metricsData[currentIndex].droppedFrames}</Text>
+              </>
+            )}
           </View>
         </>
       ) : (
@@ -339,6 +379,15 @@ export function AutomatedFeedTest({
           <Text>총 프레임 드롭: {results.frameDrops}</Text>
           <Text>최대 메모리 사용량: {results.memoryUsage?.toFixed(1)}MB</Text>
           <Text>평균 전환 지연: {results.transitionDelay?.toFixed(1)}ms</Text>
+          {results.videoItemsCount > 0 && (
+            <>
+              <Text>비디오 평균 로드 시간: {results.videoAverageLoadTime?.toFixed(1)}ms</Text>
+              <Text>비디오 버퍼링 횟수: {results.videoBufferingEvents}</Text>
+              <Text>비디오 버퍼링 총 시간: {results.videoBufferingDuration?.toFixed(1)}ms</Text>
+              <Text>비디오 드롭된 프레임: {results.videoDroppedFrames}</Text>
+              <Text>비디오 아이템 수: {results.videoItemsCount}</Text>
+            </>
+          )}
         </View>
       )}
 
