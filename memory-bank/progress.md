@@ -31,6 +31,9 @@
 - **비디오 플레이어 오류 해결**: `VideoFeedItem.tsx`에서 `VideoPlayer` 인스턴스 참조 관리 및 정리 로직을 개선하여 "Cannot use shared object that was already released" 오류 해결. `useRef`를 활용하여 `player` 객체에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 수정.
 - **성능 결과 삭제 기능 구현**: `metrics.tsx` 화면에서 사용자가 개별 또는 전체 성능 테스트 결과를 삭제할 수 있는 기능 추가. (`performanceStorage.ts`에 관련 로직 구현)
 - **성능 결과 즉시 로딩**: `metrics.tsx` 화면이 포커스될 때마다 최신 성능 결과를 로드하도록 `useFocusEffect` 적용.
+- **리스트 페이징 및 자동 스크롤 구현**:
+  - `react-native/src/utils/data-generator.ts`에 `loadPagedFeedData` 함수를 추가하여 `data.json`에서 페이지별 데이터를 로드할 수 있도록 했습니다.
+  - `react-native/src/components/AutomatedFeedTest.tsx`를 수정하여 `loadPagedFeedData`를 사용한 초기 데이터 로딩, `currentPage`, `hasMoreData`, `isFetchingMoreData` 상태 변수를 통한 페이징 로직 관리, `handleLoadMore` 콜백 함수 구현, `runTest` 함수 내 자동 스크롤 로직을 `while` 루프 기반으로 변경하여 페이징과 연동, 그리고 `FlatList`, `FlashList`, `SectionList`, `VirtualizedList` 컴포넌트에 `onEndReached` 및 `onEndReachedThreshold` prop을 추가했습니다.
 
 ## What's Left to Build
 
@@ -42,10 +45,11 @@
 - Implementation of service functions (API, storage) in both frameworks.
 - Integration of performance metrics display in the UI for both applications.
 - Setting up and running automated performance tests for both frameworks.
+- **리스트 페이징 및 자동 스크롤 기능 테스트 및 검증**: 구현된 페이징 및 자동 스크롤 기능이 의도대로 동작하는지 확인하고, 실제 시나리오에서의 성능을 측정합니다.
 
 ## Current Status
 
-The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. **성능 결과 탭 개선 작업도 완료되었습니다.** 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다.
+The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. **성능 결과 탭 개선 작업도 완료되었습니다. 리스트 페이징 및 자동 스크롤 기능 구현도 완료되었습니다.** 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다.
 
 ## Known Issues
 
@@ -76,3 +80,4 @@ The React Native project의 비디오 재생 기능 통합 및 비디오 성능 
 - **Adopted a clear separation of routing (`app/`) and non-routing (`src/`) code** to adhere to best practices and resolve Expo Router warnings.
 - **Prioritized resolving package version conflicts** to ensure project stability and compatibility.
 - **Implemented dummy memory measurement**: Due to limitations of `react-native-device-info` in Expo's managed workflow, a dummy implementation was used for memory usage measurement to allow continued development.
+- **리스트 페이징 및 자동 스크롤 구현 결정**: 실제 시나리오에 가까운 성능 테스트를 위해 `data.json` 기반의 페이지 로딩 및 자동 스크롤 시뮬레이션을 구현했습니다.

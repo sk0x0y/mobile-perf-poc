@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-The current focus is on integrating `expo-video` for video playback, implementing video performance measurement, and refining the overall list rendering performance test plan in React Native.
+The current focus is on integrating `expo-video` for video playback, implementing video performance measurement, and refining the overall list rendering performance test plan in React Native. **Additionally, the focus has been on implementing realistic list scrolling and paging scenarios for performance testing.**
 
 ## Recent Changes
 
@@ -34,6 +34,9 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **비디오 플레이어 오류 해결**: `VideoFeedItem.tsx`에서 `VideoPlayer` 인스턴스 참조 관리 및 정리 로직을 개선하여 "Cannot use shared object that was already released" 오류 해결. `useRef`를 활용하여 `player` 객체에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 수정.
 - **성능 결과 삭제 기능 구현**: `performanceStorage.ts`에 전체/개별 결과 삭제 로직 추가 및 `metrics.tsx`에 관련 UI 및 기능 연동 완료.
 - **성능 결과 즉시 로딩 개선**: `metrics.tsx`에 `useFocusEffect`를 적용하여 탭 포커스 시 최신 결과가 로드되도록 수정.
+- **리스트 페이징 및 자동 스크롤 구현**:
+  - `react-native/src/utils/data-generator.ts`에 `loadPagedFeedData` 함수를 추가하여 `data.json`에서 페이지별 데이터를 로드할 수 있도록 했습니다.
+  - `react-native/src/components/AutomatedFeedTest.tsx`를 수정하여 `loadPagedFeedData`를 사용한 초기 데이터 로딩, `currentPage`, `hasMoreData`, `isFetchingMoreData` 상태 변수를 통한 페이징 로직 관리, `handleLoadMore` 콜백 함수 구현, `runTest` 함수 내 자동 스크롤 로직을 `while` 루프 기반으로 변경하여 페이징과 연동, 그리고 `FlatList`, `FlashList`, `SectionList`, `VirtualizedList` 컴포넌트에 `onEndReached` 및 `onEndReachedThreshold` prop을 추가했습니다.
 
 ## Next Steps
 
@@ -45,6 +48,7 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - Conduct performance tests for both React Native and Flutter applications according to the plan in `docs/PRD.md`.
 - Analyze the performance test results and document findings in `memory-bank/progress.md`.
 - Prepare a report comparing the performance of React Native and Flutter based on the test results.
+- **리스트 페이징 및 자동 스크롤 기능 테스트 및 검증**: 구현된 페이징 및 자동 스크롤 기능이 의도대로 동작하는지 확인하고, 실제 시나리오에서의 성능을 측정합니다.
 
 ## Active Decisions and Considerations
 
@@ -59,22 +63,7 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **`AutomatedFeedTest.tsx` 업데이트**: 비디오 성능 측정 로직을 통합하고, `FeedItem`에 필요한 props를 전달하도록 수정했습니다.
 - **`index.tsx` 업데이트**: 테스트 시작 화면의 설명을 업데이트하여 비디오 성능 테스트가 포함됨을 명시했습니다.
 - **Watchman 관련 오류 해결**: Watchman 서비스 재시작을 통해 프로젝트 실행 시 발생하던 오류 해결.
-
-## Next Steps
-
-- 구현된 JavaScript 기반 FPS 측정을 활용한 데이터 수집 및 분석 수행.
-- 각 리스트 구현체 간의 성능 비교 분석 및 결과 시각화.
-- 측정된 데이터의 통계적 분석 및 보고서 작성.
-- **비디오 성능 테스트 및 검증**: 통합된 비디오 재생 및 성능 측정 기능이 올바르게 작동하는지 확인하고, 실제 기기 또는 에뮬레이터에서 성능 테스트를 수행합니다.
-
-## Active Decisions and Considerations
-
-- **JavaScript 기반 FPS 측정 구현**: `react-native-performance`의 'frame' 엔트리 타입이 지원되지 않는 문제에 대응하여, 순수 JavaScript 기반 FPS 측정 메커니즘을 구현했습니다. 이 방식은 네이티브 FPS보다는 JavaScript 스레드의 성능을 측정하지만, 관리형 워크플로우 내에서 유용한 비교 데이터를 제공합니다.
-- The terminal output is not updating reliably, making it difficult to confirm successful bundling and app launch. This issue might require further investigation or manual verification steps by the user.
-- The peer dependency warning for `react-native-fast-image` and React version 19 still needs to be addressed to ensure compatibility.
-- The structure of `docs/data.json` is complex; the current type definitions might need further refinement.
-- **`react-native-device-info` native module issue**: Decided to use a dummy implementation for memory usage measurement in `src/utils/performance.ts` to allow continued development in the managed workflow. A full native module solution would require switching to a development build (`npx expo prebuild`).
-- **`expo-router` default export warning**: `WARN Route "./(tabs)/index.tsx" is missing the required default export.` This warning persists despite verifying the `index.tsx` and `_layout.tsx` files. It is currently considered a non-blocking issue, possibly related to Expo's internal caching or `expo-router` version.
+- **리스트 페이징 및 자동 스크롤 구현 결정**: 실제 시나리오에 가까운 성능 테스트를 위해 `data.json` 기반의 페이지 로딩 및 자동 스크롤 시뮬레이션을 구현하기로 결정했습니다.
 
 ## Learnings and Project Insights
 
@@ -83,6 +72,7 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - Debugging module resolution issues in a complex setup like React Native with Expo, PNPM, path aliases, and Barrel Pattern can be challenging.
 - Understanding how Expo Router handles file-based routing is critical for proper project structuring and avoiding unnecessary warnings.
 - Careful management of `default` vs. `named` exports is important when using barrel files and module aliases.
-- **Managed workflow limitations**: Direct use of certain native modules like `react-native-device-info` is restricted in Expo's managed workflow, necessitating workarounds or a switch to development builds.
+- **Managed workflow limitations**: Direct use of certain native modules like `react-native-device-info` is restricted in Expo's managed workflow, necessitating workarounds or a switch to development build.
 - **AsyncStorage와 FileSystem을 함께 사용하여 데이터를 관리할 때 일관성 유지의 중요성**: 성능 결과 삭제 기능 구현 시 두 저장소 간의 데이터 일관성을 유지하는 것이 중요함을 확인했습니다.
 - **Expo Router의 `useFocusEffect`를 활용한 화면 업데이트 전략의 유용성**: 탭 전환 시 최신 데이터를 즉시 반영하는 데 `useFocusEffect`가 매우 효과적임을 확인했습니다.
+- **리스트 페이징 구현의 복잡성**: `onEndReached`와 자동 스크롤 로직을 연동하고, 데이터 로딩 상태 및 종료 조건을 관리하는 것이 중요함을 확인했습니다.

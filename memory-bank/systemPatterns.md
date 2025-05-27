@@ -39,7 +39,7 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 
 ## Data Handling Patterns
 
-- Loading and parsing local JSON data (`docs/data.json`).
+- Loading and parsing local JSON data (`docs/data.json`) **with support for page-based loading**.
 - Providing data to list components efficiently.
 - Managing (saving, loading, **deleting**) performance test results using AsyncStorage for metadata and FileSystem for detailed data.
 
@@ -66,7 +66,7 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 
 ## Critical Implementation Paths
 
-- **List Rendering Pipeline**: Loading data from `docs/data.json`, passing it to list components, rendering items, and measuring performance during scrolling.
+- **List Rendering Pipeline**: Loading data from `docs/data.json` **in a paged manner**, passing it to list components, rendering items, and measuring performance during scrolling.
 - **Performance Monitoring Integration**: Capturing performance metrics using `react-native-performance` and displaying them via the `PerformanceMetrics` component, **and managing their persistence (saving, loading, and deleting)**.
 - **Navigation Flow**: Ensuring smooth transitions between tabs and list test screens using Expo Router.
 - **비디오 재생 및 성능 측정**: `VideoFeedItem.tsx`에서 `useVideoPlayer`를 통해 비디오를 재생하고, `useVideoPerformanceMetrics` 훅을 통해 로드 시간, 버퍼링, 드롭된 프레임 등의 성능 지표를 측정.
