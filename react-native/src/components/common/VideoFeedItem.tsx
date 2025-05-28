@@ -9,7 +9,7 @@ const { width, height } = Dimensions.get('window');
 
 interface VideoFeedItemProps {
   item: FeedItemData;
-  isFocused: boolean;
+  isActive: boolean;
   onVideoLoad?: () => void;
   onVideoError?: (error: Error) => void;
   onMetricsUpdate?: (metrics: VideoMetrics) => void;
@@ -17,7 +17,7 @@ interface VideoFeedItemProps {
 
 export const VideoFeedItem = ({
   item,
-  isFocused,
+  isActive,
   onVideoLoad,
   onVideoError,
   onMetricsUpdate,
@@ -115,7 +115,7 @@ export const VideoFeedItem = ({
     if (!playerRef.current || !isMounted.current) return;
 
     try {
-      if (isFocused) {
+      if (isActive) {
         playerRef.current.play();
         setIsPlaying(true);
       } else {
@@ -125,7 +125,7 @@ export const VideoFeedItem = ({
     } catch (error) {
       console.log('Video playback control error:', error);
     }
-  }, [isFocused, playerRef.current, isMounted.current]);
+  }, [isActive, playerRef.current, isMounted.current]);
 
   const togglePlayback = useCallback(() => {
     if (!playerRef.current) return;

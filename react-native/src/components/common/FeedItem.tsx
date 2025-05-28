@@ -13,6 +13,7 @@ interface FeedItemProps {
   item: FeedItemData;
   index: number;
   focusedIndex?: number;
+  isActive?: boolean;
   onVideoLoad?: () => void;
   onVideoError?: (error: Error) => void;
   onVideoMetricsUpdate?: (index: number, metrics: VideoMetrics) => void;
@@ -23,6 +24,7 @@ export const FeedItem = memo(
     item,
     index,
     focusedIndex,
+    isActive = false,
     onVideoLoad,
     onVideoError,
     onVideoMetricsUpdate,
@@ -46,13 +48,12 @@ export const FeedItem = memo(
     // 비디오 URL이 있는지 확인
     const hasVideo = Boolean(displayData.videoUrl);
 
-    // 비디오가 있고 현재 포커스된 아이템인 경우에만 비디오 컴포넌트 렌더링
+    // 비디오가 있고 현재 활성 아이템인 경우에만 비디오 컴포넌트 렌더링
     if (hasVideo) {
-      const isFocused = focusedIndex === index;
       return (
         <VideoFeedItem
           item={item}
-          isFocused={isFocused}
+          isActive={isActive}
           onVideoLoad={onVideoLoad}
           onVideoError={onVideoError}
           onMetricsUpdate={metrics => onVideoMetricsUpdate?.(index, metrics)}
