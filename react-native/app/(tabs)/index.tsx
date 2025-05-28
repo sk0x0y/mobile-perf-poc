@@ -23,7 +23,7 @@ export default function HomeScreen() {
       <AutomatedFeedTest
         testName={runningTest}
         itemCount={100}
-        swipeDuration={500}
+        swipeDuration={330}
         onComplete={handleTestComplete}
       />
     );
