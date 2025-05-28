@@ -54,12 +54,14 @@ export function AutomatedFeedTest({
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [results, setResults] = useState<any>(null);
   const [feedData, setFeedData] = useState<FeedItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+  const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true); // 더 로드할 데이터가 있는지
   const [isFetchingMoreData, setIsFetchingMoreData] = useState(false); // 데이터 로드 중인지
+  const [listHeight, setListHeight] = useState(height); // 리스트 컨테이너의 실제 높이
 
   const listRef = useRef<
     FlatList | FlashList<FeedItemData> | SectionList | VirtualizedList<FeedItemData> | any
@@ -96,7 +98,7 @@ export function AutomatedFeedTest({
 
   useEffect(() => {
     loadInitialData();
-  }, []); // itemCount 의존성 제거
+  }, []);
 
   const handleLoadMore = useCallback(async () => {
     if (isFetchingMoreData || !hasMoreData) {
@@ -152,7 +154,7 @@ export function AutomatedFeedTest({
             viewPosition: 0,
           });
         } else {
-          listRef.current.scrollToIndex({ index: currentScrollIndex, animated: false });
+          listRef.current.scrollToIndex({ index: currentScrollIndex, animated: true });
         }
       }
 
@@ -224,7 +226,7 @@ export function AutomatedFeedTest({
     const metaData = {
       testName,
       timestamp: Date.now(),
-      itemCount: totalItemsToScroll, // 변경된 itemCount 사용
+      itemCount: totalItemsToScroll,
       swipeDuration,
       summary: aggregatedMetrics,
     };
@@ -240,30 +242,53 @@ export function AutomatedFeedTest({
   const { metricsData, updateMetrics, getAggregatedMetrics, resetMetrics } =
     useVideoPerformanceMetrics();
 
+  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: any[] }) => {
+    if (viewableItems.length > 0) {
+      const firstViewableIndex = viewableItems[0].index;
+      setActiveItemIndex(firstViewableIndex);
+    } else {
+      setActiveItemIndex(null);
+    }
+  }, []);
+
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50, // 아이템의 50% 이상이 보여야 'viewable'로 간주
+    minimumViewTime: 250, // 0.25초 이상 보여야 'viewable'로 간주
+    waitForInteraction: false, // 스크롤 정지 후가 아닌, 스크롤 중에도 viewable 체크
+  };
+
   const renderFeedItem = useCallback(
     ({ item, index }: { item: FeedItemData; index: number }) => {
+      const isActive = index === activeItemIndex;
       return (
-        <FeedItem
-          item={item}
-          index={index}
-          focusedIndex={currentIndex}
-          onVideoLoad={() => {
-            // 필요시 비디오 로드 완료 시점 기록
-          }}
-          onVideoError={error => {
-            console.error(`Video error at index ${index}:`, error);
-          }}
-          onVideoMetricsUpdate={updateMetrics}
-        />
+        <View style={{ height: listHeight }}>
+          <FeedItem
+            item={item}
+            index={index}
+            focusedIndex={currentIndex}
+            isActive={isActive}
+            onVideoLoad={() => {
+              // 필요시 비디오 로드 완료 시점 기록
+            }}
+            onVideoError={error => {
+              console.error(`Video error at index ${index}:`, error);
+            }}
+            onVideoMetricsUpdate={updateMetrics}
+          />
+        </View>
       );
     },
-    [currentIndex, updateMetrics]
+    [currentIndex, updateMetrics, listHeight, activeItemIndex]
   );
 
   const sectionListData = [{ title: 'Feed Items', data: feedData }];
 
   const getItem = useCallback((data: FeedItemData[], index: number) => data[index], []);
   const getItemCount = useCallback((data: FeedItemData[]) => data.length, []);
+
+  const handleListLayout = useCallback((event: any) => {
+    setListHeight(event.nativeEvent.layout.height);
+  }, []);
 
   if (isLoading) {
     return (
@@ -298,12 +323,16 @@ export function AutomatedFeedTest({
             windowSize={10}
             removeClippedSubviews={true}
             getItemLayout={(data, index) => ({
-              length: height,
-              offset: height * index,
+              length: listHeight,
+              offset: listHeight * index,
               index,
             })}
+            pagingEnabled={true}
+            decelerationRate="fast"
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
           />
         );
       case 'FlashList Test':
@@ -315,7 +344,7 @@ export function AutomatedFeedTest({
             keyExtractor={(item, index) =>
               `flashlist-${item.feed?.id || item.shortply?.id}-${index}`
             }
-            estimatedItemSize={height}
+            estimatedItemSize={listHeight}
             getItemType={item => {
               if (item.feed) {
                 return 'feed';
@@ -324,8 +353,14 @@ export function AutomatedFeedTest({
               }
               return 'unknown';
             }}
+            pagingEnabled={true}
+            decelerationRate="fast"
+            snapToInterval={listHeight}
+            snapToAlignment="start"
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
           />
         );
       case 'SectionList Test':
@@ -342,10 +377,12 @@ export function AutomatedFeedTest({
             windowSize={10}
             removeClippedSubviews={true}
             getItemLayout={(data, index) => ({
-              length: height,
-              offset: height * index,
+              length: listHeight,
+              offset: listHeight * index,
               index,
             })}
+            pagingEnabled={true}
+            decelerationRate="fast"
             renderSectionHeader={({ section: { title } }) => (
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionHeaderText}>{title}</Text>
@@ -353,6 +390,8 @@ export function AutomatedFeedTest({
             )}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
           />
         );
       case 'VirtualizedList Test':
@@ -371,12 +410,18 @@ export function AutomatedFeedTest({
             windowSize={10}
             removeClippedSubviews={true}
             getItemLayout={(data, index) => ({
-              length: height,
-              offset: height * index,
+              length: listHeight,
+              offset: listHeight * index,
               index,
             })}
+            pagingEnabled={true}
+            decelerationRate="fast"
+            snapToInterval={listHeight}
+            snapToAlignment="start"
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
           />
         );
       default:
@@ -460,7 +505,9 @@ export function AutomatedFeedTest({
         </View>
       )}
 
-      <View style={styles.listContainer}>{renderList()}</View>
+      <View style={styles.listContainer} onLayout={handleListLayout}>
+        {renderList()}
+      </View>
     </View>
   );
 }
