@@ -79,3 +79,4 @@ Will follow a similar component-based architecture, leveraging Flutter's widget 
 - Adherence to configured ESLint and Prettier rules.
 - Organized imports using path aliases and Barrel Pattern.
 - **비디오 플레이어 인스턴스 관리**: `VideoFeedItem.tsx` 내에서 `useRef`를 사용하여 `VideoPlayer` 인스턴스에 대한 안정적인 참조를 유지하고, 컴포넌트 마운트 상태를 추적하여 안전하게 `play()` 및 `pause()` 메서드를 호출하도록 구현. 컴포넌트 언마운트 시 `player` 리소스를 안전하게 정리.
+- **리스트 스냅 높이 동적 조정**: `AutomatedFeedTest.tsx`에서 `onLayout`을 통해 리스트 컨테이너의 실제 높이를 측정하고, 이 값을 `getItemLayout`, `snapToInterval` 및 `renderFeedItem` 내의 `FeedItem` 높이에 적용하여 정확한 풀스크린 스냅을 구현.

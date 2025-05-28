@@ -1,201 +1,70 @@
-# React Native 피드 렌더링 성능 테스트 구현 계획 (Sequential Thinking)
+# Implementation Plan: Improve Metric Display Layout in AutomatedFeedTest
 
-## 개요
+## 1. Goal
 
-이 문서는 React Native 피드 렌더링 성능 테스트를 위한 상세 구현 계획을 Sequential Thinking 방법론에 따라 구조화한 것입니다. `expo-image` 통합, `FlashList` 최적화, 성능 측정 인프라 구축 및 자동화된 테스트 시나리오 구현을 목표로 합니다.
+Modify the `AutomatedFeedTest.tsx` component to prevent layout shifts in the metrics display area when video metrics are added or removed. This will be achieved by ensuring the metrics area maintains a consistent height regardless of the presence of video-specific information.
 
-## 1단계: 프로젝트 분석 및 환경 설정
+## 2. Problem Description
 
-### 목표: 현재 프로젝트 상태를 파악하고, 필요한 라이브러리 전환 및 성능 측정 전략을 수립합니다.
+Currently, when video metrics are displayed in the "realtimeMetrics" and "results" sections of `AutomatedFeedTest.tsx`, the overall height of these sections changes. This causes layout shifts and potential re-renders, impacting user experience and potentially performance.
 
-1.1. **기존 코드베이스 분석**
+## 3. Proposed Solution
 
-- `react-native/src/components/common/FeedItem.tsx` 등 핵심 파일 검토
-- 현재 성능 측정 코드 및 문제점 파악
-- 의존성: 없음
-- 예상 시간: 30분
-- 완료 여부: [ ]
+### 3.1. `realtimeMetrics` Section (`AutomatedFeedTest.tsx`)
 
-1.2. **필요한 라이브러리 업데이트 계획**
+- **Objective**: Ensure the real-time metrics display area maintains a consistent height.
+- **Changes**:
+  1.  The existing general performance metrics (FPS, Frame Drops, Memory Usage, Transition Delay) will continue to be displayed vertically.
+  2.  A new dedicated horizontal row/area with a fixed `minHeight` will be added below the general metrics specifically for video performance metrics.
+  3.  This new area will display video metrics (Load Time, Buffering Events, Buffering Duration, Dropped Frames) horizontally (e.g., using `flexDirection: 'row'`).
+  4.  If no video metrics are available for the current item (e.g., it's not a video or metrics are still loading), this dedicated area will still occupy the same vertical space, possibly showing placeholder text like "비디오 정보 없음" or simply remaining blank but maintaining its height. This ensures no layout shift occurs.
+  5.  The `realtimeMetrics` `View` style might need adjustment (e.g., `minHeight` or internal padding) to accommodate this new fixed-height row for video metrics without causing the overall section to resize.
 
-- `react-native-fast-image` → `expo-image` 전환 검토
-- `@shopify/flash-list` 최적 버전 확인
-- 의존성: 1.1
-- 예상 시간: 20분
-- 완료 여부: [ ]
+### 3.2. `results` Section (`AutomatedFeedTest.tsx`)
 
-1.3. **성능 측정 전략 수립**
+- **Objective**: Ensure the test results summary area also maintains a consistent height.
+- **Changes**:
+  1.  Similar to the `realtimeMetrics` section, the area displaying video-related summary statistics (Video Average Load Time, Buffering Events, etc.) will be designed to have a consistent height.
+  2.  Video-related results will also be displayed horizontally within a dedicated part of the `results` view.
+  3.  If a test run does not include video items or video metrics, this part of the summary will still occupy its allocated space (e.g., showing "N/A" for video metrics) to prevent the `results` section from changing height.
 
-- 측정할 지표 선정 (FPS, 메모리 사용량, 렌더링 시간, 프레임 드롭)
-- 측정 방법론 및 데이터 포맷 설계
-- 의존성: 1.1
-- 예상 시간: 30분
-- 완료 여부: [ ]
+## 4. Files to Modify
 
-## 2단계: 성능 측정 인프라 구축
+- `react-native/src/components/AutomatedFeedTest.tsx`:
+  - Update the JSX structure for `realtimeMetrics` and `results` sections.
+  - Update the `StyleSheet` for these sections to implement fixed heights/minHeights and horizontal layout for video metrics.
 
-### 목표: 앱 내에서 성능 지표를 측정하고 데이터를 수집할 수 있는 기반을 마련합니다.
+## 5. Expected Outcome
 
-2.1. **기본 성능 측정 훅 구현**
+- Elimination of layout shifts in the metrics display area when video metrics appear or disappear.
+- Potentially improved performance due to reduced re-renders.
+- A more stable and visually consistent user interface during automated tests.
 
-- `usePerformanceMetrics` 훅 개선
-- FPS 측정 (`global.performance` API 활용)
-- 의존성: 1.3
-- 예상 시간: 45분
-- 리스크: Expo 관리형 워크플로우에서 API 접근 제한 가능성
-- 완료 여부: [ ]
+## 6. Visual Plan (Conceptual)
 
-2.2. **메모리 사용량 측정 구현**
+**Realtime Metrics Area:**
 
-- Expo 관리형 워크플로우 제한 고려한 대체 구현
-- 의존성: 2.1
-- 예상 시간: 30분
-- 리스크: 실제 메모리 측정이 불가능할 경우 더미 구현으로 대체
-- 완료 여부: [ ]
+```
++--------------------------------------+
+| FPS: 60                              |
+| Frame Drops: 0                       |
+| Memory: 100MB                        |
+| Transition Delay: 10ms               |
++--------------------------------------+
+| Video Load: 500ms | Buffering: 0 | ...|  <- Fixed height horizontal row
++--------------------------------------+
+```
 
-2.3. **데이터 저장 메커니즘 구현**
+**Results Summary Area:**
 
-- 성능 데이터 JSON 형식 정의
-- 측정 결과 파일 저장 기능 구현
-- 의존성: 2.1, 2.2
-- 예상 시간: 45분
-- 완료 여부: [ ]
+```
++--------------------------------------+
+| Average FPS: 59.8                    |
+| Total Frame Drops: 5                 |
+| ...                                  |
++--------------------------------------+
+| Video Avg Load: 550ms | Total Buff: 2| ...| <- Fixed height horizontal row
++--------------------------------------+
+```
 
-2.4. **UI 성능 표시 컴포넌트 개선**
-
-- `PerformanceMetrics` 컴포넌트 업데이트
-- 실시간 지표 표시 개선
-- 의존성: 2.1, 2.2
-- 예상 시간: 30분
-- 완료 여부: [ ]
-
-## 3단계: 이미지 최적화 구현
-
-### 목표: `FastImage`를 `expo-image`로 교체하고 이미지 로딩 성능을 최적화합니다.
-
-3.1. **expo-image 통합**
-
-- 패키지 설치 및 의존성 관리
-- 의존성: 1.2
-- 예상 시간: 15분
-- 리스크: 패키지 버전 충돌 가능성
-- 완료 여부: [ ]
-
-3.2. **FeedItem 컴포넌트 수정**
-
-- FastImage → expo-image 전환
-- BlurHash 및 콘텐츠 맞춤 기능 적용
-- 의존성: 3.1
-- 예상 시간: 30분
-- 리스크: 기존 스타일 및 레이아웃 영향 가능성
-- 완료 여부: [ ]
-
-3.3. **이미지 최적화 테스트**
-
-- 변경 전/후 렌더링 성능 비교
-- 이미지 로딩 시간 측정
-- 의존성: 2.4, 3.2
-- 예상 시간: 20분
-- 완료 여부: [ ]
-
-## 4단계: 리스트 렌더링 최적화
-
-### 목표: `FlashList`를 포함한 다양한 리스트 구현체를 최적화하고 성능을 향상시킵니다.
-
-4.1. **FlashList 기본 구현**
-
-- 기존 FlatList 코드 분석
-- FlashList 적용을 위한 코드 수정
-- 의존성: 1.1
-- 예상 시간: 45분
-- 완료 여부: [ ]
-
-4.2. **FlashList 고급 최적화 적용**
-
-- `estimatedItemSize` 최적화
-- `getItemType` 구현으로 아이템 타입별 최적화
-- `memo` 적용으로 불필요한 리렌더링 방지
-- 의존성: 4.1
-- 예상 시간: 60분
-- 리스크: 복잡한 데이터 구조로 인한 구현 어려움
-- 완료 여부: [ ]
-
-4.3. **다른 리스트 구현체 최적화**
-
-- FlatList, SectionList, VirtualizedList 최적화
-- `removeClippedSubviews`, `getItemLayout` 등 설정
-- 의존성: 4.1
-- 예상 시간: 45분
-- 완료 여부: [ ]
-
-## 5단계: 테스트 자동화 구현
-
-### 목표: 다양한 시나리오에 대한 성능 테스트를 자동화하고 데이터를 수집합니다.
-
-5.1. **AutomatedFeedTest 컴포넌트 개선**
-
-- 테스트 시나리오 자동화 로직 구현
-- 의존성: 2.3, 3.3, 4.2
-- 예상 시간: 45분
-- 완료 여부: [ ]
-
-5.2. **초기 로딩 테스트 구현**
-
-- 앱 시작부터 첫 렌더링까지 시간 측정
-- 데이터 수집 및 저장
-- 의존성: 5.1
-- 예상 시간: 30분
-- 완료 여부: [ ]
-
-5.3. **연속 스와이프 테스트 구현**
-
-- 100개 아이템 연속 스크롤 자동화
-- FPS 및 메모리 사용량 추적
-- 의존성: 5.1
-- 예상 시간: 30분
-- 리스크: 자동화된 스와이프 구현의 어려움
-- 완료 여부: [ ]
-
-5.4. **장시간 사용 테스트 구현**
-
-- 5분 이상 앱 사용 시뮬레이션
-- 메모리 누수 및 성능 저하 측정
-- 의존성: 5.1
-- 예상 시간: 30분
-- 완료 여부: [ ]
-
-## 6단계: 데이터 수집 및 분석
-
-### 목표: 수집된 성능 데이터를 분석하고 시각화하여 의미 있는 결론을 도출합니다.
-
-6.1. **테스트 실행 및 데이터 수집**
-
-- Android 에뮬레이터에서 테스트
-- 다양한 조건에서 반복 측정
-- 의존성: 5.2, 5.3, 5.4
-- 예상 시간: 60분
-- 리스크: 에뮬레이터 성능 변동 가능성
-- 완료 여부: [ ]
-
-6.2. **수집 데이터 분석**
-
-- 통계적 분석 (평균, 중앙값, 표준편차)
-- 의존성: 6.1
-- 예상 시간: 30분
-- 완료 여부: [ ]
-
-6.3. **결과 시각화 및 보고서 작성**
-
-- 성능 차트 생성
-- 최적화 효과 분석 및 문서화
-- 의존성: 6.2
-- 예상 시간: 45분
-- 완료 여부: [ ]
-
-## 총 예상 시간: 약 10시간 30분 (버퍼 없음)
-
-## 주요 리스크 관리 전략
-
-1. **시간 제약**: 각 단계별 타임박스 설정, 필요시 범위 축소 (5.4 장시간 테스트 우선 생략)
-2. **기술적 제약**: 특정 API 제한 시 대체 구현 준비 (메모리 측정 더미 구현)
-3. **환경 의존성**: 에뮬레이터 성능 변동성 고려, 여러 번 반복 측정으로 신뢰성 확보
+(If no video data, the horizontal rows above would be present but show "N/A" or be blank, maintaining the space).

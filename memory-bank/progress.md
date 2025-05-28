@@ -34,6 +34,8 @@
 - **리스트 페이징 및 자동 스크롤 구현**:
   - `react-native/src/utils/data-generator.ts`에 `loadPagedFeedData` 함수를 추가하여 `data.json`에서 페이지별 데이터를 로드할 수 있도록 했습니다.
   - `react-native/src/components/AutomatedFeedTest.tsx`를 수정하여 `loadPagedFeedData`를 사용한 초기 데이터 로딩, `currentPage`, `hasMoreData`, `isFetchingMoreData` 상태 변수를 통한 페이징 로직 관리, `handleLoadMore` 콜백 함수 구현, `runTest` 함수 내 자동 스크롤 로직을 `while` 루프 기반으로 변경하여 페이징과 연동, 그리고 `FlatList`, `FlashList`, `SectionList`, `VirtualizedList` 컴포넌트에 `onEndReached` 및 `onEndReachedThreshold` prop을 추가했습니다.
+- **자동화 테스트 화면 메트릭 표시 영역 레이아웃 개선**: `AutomatedFeedTest.tsx` 파일에서 비디오 메트릭이 추가되거나 제거될 때 레이아웃이 변경되지 않도록 `realtimeMetrics` 및 `results` 섹션의 스타일을 수정했습니다. 비디오 메트릭을 위한 고정 높이의 수평 레이아웃을 적용했습니다.
+- **리스트 스냅 효과 정확도 개선**: `AutomatedFeedTest.tsx`에서 상단 메트릭 영역을 고려하여, `onLayout`으로 실제 리스트 높이를 측정하고 이를 `getItemLayout`, `snapToInterval` 및 개별 아이템 높이에 적용하여 스크롤 크기 정확도 향상.
 
 ## What's Left to Build
 
@@ -45,17 +47,12 @@
 - Implementation of service functions (API, storage) in both frameworks.
 - Integration of performance metrics display in the UI for both applications.
 - Setting up and running automated performance tests for both frameworks.
-- **리스트 페이징 및 자동 스크롤 기능 테스트 및 검증**: 구현된 페이징 및 자동 스크롤 기능이 의도대로 동작하는지 확인하고, 실제 시나리오에서의 성능을 측정합니다.
 
 ## Current Status
 
-The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. **성능 결과 탭 개선 작업도 완료되었습니다. 리스트 페이징 및 자동 스크롤 기능 구현도 완료되었습니다.** 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다.
+The React Native project의 비디오 재생 기능 통합 및 비디오 성능 측정 기능 구현이 완료되었습니다. **성능 결과 탭 개선 작업도 완료되었습니다. 리스트 페이징 및 자동 스크롤 기능 구현도 완료되었습니다. 자동화 테스트 화면 메트릭 표시 영역 레이아웃 개선도 완료되었습니다. 리스트 스냅 효과 정확도 개선 작업도 완료되었습니다.** 이제 앱을 실행하여 실제 모바일 환경에서 비디오 재생 및 성능 측정 기능을 검증해야 합니다.
 
 ## Known Issues
-
-- **JavaScript 기반 FPS 측정 구현**: `requestAnimationFrame`을 활용한 FPS 및 프레임 드롭 측정 기능을 순수 JavaScript로 구현하여 Expo 관리형 워크플로우의 제한을 우회.
-- **성능 측정 인프라 개선**: `usePerformanceMetrics` 훅에 getter 함수들을 추가하여 비동기 상태 업데이트로 인한 데이터 수집 문제 해결.
-- **Watchman 서비스 관련 오류 해결**: 프로젝트 실행 시 발생하던 권한 관련 오류를 Watchman 서비스 재시작으로 해결.
 
 ## Known Issues
 
@@ -65,8 +62,6 @@ The React Native project의 비디오 재생 기능 통합 및 비디오 성능 
 - **`expo-router` default export warning**: `WARN Route "./(tabs)/index.tsx" is missing the required default export.` This warning persists despite verifying the `index.tsx` and `_layout.tsx` files. It is currently considered a non-blocking issue, possibly related to Expo's internal caching or `expo-router` version.
 
 ## Evolution of Project Decisions
-
-- **JavaScript 기반 FPS 측정 채택**: 네이티브 'frame' 엔트리 타입 지원 제한을 해결하기 위해 `requestAnimationFrame` 기반의 JavaScript FPS 측정 방식을 구현했습니다. 이는 베어 워크플로우로 전환하지 않고도 의미 있는 성능 데이터를 수집할 수 있게 합니다.
 
 ## Evolution of Project Decisions
 
@@ -81,3 +76,4 @@ The React Native project의 비디오 재생 기능 통합 및 비디오 성능 
 - **Prioritized resolving package version conflicts** to ensure project stability and compatibility.
 - **Implemented dummy memory measurement**: Due to limitations of `react-native-device-info` in Expo's managed workflow, a dummy implementation was used for memory usage measurement to allow continued development.
 - **리스트 페이징 및 자동 스크롤 구현 결정**: 실제 시나리오에 가까운 성능 테스트를 위해 `data.json` 기반의 페이지 로딩 및 자동 스크롤 시뮬레이션을 구현했습니다.
+- **자동화 테스트 화면 메트릭 표시 영역 레이아웃 안정화**: 비디오 메트릭의 유무에 관계없이 `AutomatedFeedTest.tsx`의 `realtimeMetrics` 및 `results` 섹션의 레이아웃이 변경되지 않도록 `minHeight`와 수평 레이아웃을 적용했습니다.

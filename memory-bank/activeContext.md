@@ -37,6 +37,7 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **리스트 페이징 및 자동 스크롤 구현**:
   - `react-native/src/utils/data-generator.ts`에 `loadPagedFeedData` 함수를 추가하여 `data.json`에서 페이지별 데이터를 로드할 수 있도록 했습니다.
   - `react-native/src/components/AutomatedFeedTest.tsx`를 수정하여 `loadPagedFeedData`를 사용한 초기 데이터 로딩, `currentPage`, `hasMoreData`, `isFetchingMoreData` 상태 변수를 통한 페이징 로직 관리, `handleLoadMore` 콜백 함수 구현, `runTest` 함수 내 자동 스크롤 로직을 `while` 루프 기반으로 변경하여 페이징과 연동, 그리고 `FlatList`, `FlashList`, `SectionList`, `VirtualizedList` 컴포넌트에 `onEndReached` 및 `onEndReachedThreshold` prop을 추가했습니다.
+- **자동화 테스트 화면 메트릭 표시 영역 레이아웃 개선**: `AutomatedFeedTest.tsx` 파일에서 비디오 메트릭이 추가되거나 제거될 때 레이아웃이 변경되지 않도록 `realtimeMetrics` 및 `results` 섹션의 스타일을 수정했습니다. 비디오 메트릭을 위한 고정 높이의 수평 레이아웃을 적용했습니다.
 
 ## Next Steps
 
@@ -64,6 +65,7 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **`index.tsx` 업데이트**: 테스트 시작 화면의 설명을 업데이트하여 비디오 성능 테스트가 포함됨을 명시했습니다.
 - **Watchman 관련 오류 해결**: Watchman 서비스 재시작을 통해 프로젝트 실행 시 발생하던 오류 해결.
 - **리스트 페이징 및 자동 스크롤 구현 결정**: 실제 시나리오에 가까운 성능 테스트를 위해 `data.json` 기반의 페이지 로딩 및 자동 스크롤 시뮬레이션을 구현하기로 결정했습니다.
+- **자동화 테스트 화면 메트릭 표시 영역 레이아웃 안정화**: 비디오 메트릭의 유무에 관계없이 `AutomatedFeedTest.tsx`의 `realtimeMetrics` 및 `results` 섹션의 레이아웃이 변경되지 않도록 `minHeight`와 수평 레이아웃을 적용했습니다.
 
 ## Learnings and Project Insights
 
@@ -76,3 +78,5 @@ The current focus is on integrating `expo-video` for video playback, implementin
 - **AsyncStorage와 FileSystem을 함께 사용하여 데이터를 관리할 때 일관성 유지의 중요성**: 성능 결과 삭제 기능 구현 시 두 저장소 간의 데이터 일관성을 유지하는 것이 중요함을 확인했습니다.
 - **Expo Router의 `useFocusEffect`를 활용한 화면 업데이트 전략의 유용성**: 탭 전환 시 최신 데이터를 즉시 반영하는 데 `useFocusEffect`가 매우 효과적임을 확인했습니다.
 - **리스트 페이징 구현의 복잡성**: `onEndReached`와 자동 스크롤 로직을 연동하고, 데이터 로딩 상태 및 종료 조건을 관리하는 것이 중요함을 확인했습니다.
+- **UI 레이아웃 안정화의 중요성**: 동적으로 내용이 추가되거나 제거될 때 발생하는 레이아웃 쉬프트는 사용자 경험을 저해하고 불필요한 렌더링을 유발할 수 있음을 확인했습니다. `minHeight`와 같은 CSS 속성 및 유연한 레이아웃(`flexDirection: 'row'`, `flexWrap: 'wrap'`)을 통해 이를 효과적으로 방지할 수 있습니다.
+- **리스트 스냅 효과 정확도 개선**: `AutomatedFeedTest.tsx`에서 `onLayout`을 통해 실제 리스트 컨테이너의 높이를 동적으로 측정하고, 이 값을 `getItemLayout`, `snapToInterval` 및 `renderFeedItem` 내의 `FeedItem` 높이에 적용하여 상단 메트릭 영역을 고려한 정확한 스크롤 스냅을 구현했습니다.
