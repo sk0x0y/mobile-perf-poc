@@ -16,7 +16,7 @@ import { FeedItemData } from '@typedefs/feed';
 import { VideoMetrics } from '@typedefs/video-metrics';
 
 import { saveTestMetadata, saveDetailedPerformanceData } from '@utils/performanceStorage';
-import { loadFeedData, generateTestData, loadPagedFeedData } from '@utils/data-generator'; // loadPagedFeedData 추가
+import { loadFeedData, generateTestData, loadPagedFeedData } from '@utils/data-generator';
 
 import { usePerformanceMetrics } from '@hooks/usePerformanceMetrics';
 import { useVideoPerformanceMetrics } from '@hooks/useVideoPerformanceMetrics';
@@ -399,16 +399,26 @@ export function AutomatedFeedTest({
             <Text>프레임 드롭: {metrics.frameDrops}</Text>
             <Text>메모리: {metrics.memoryUsage.toFixed(1)}MB</Text>
             <Text>전환 지연: {metrics.transitionDelay.toFixed(1)}ms</Text>
-            {metricsData[currentIndex] && (
-              <>
-                <Text>비디오 로드 시간: {metricsData[currentIndex].loadTime.toFixed(1)}ms</Text>
-                <Text>비디오 버퍼링 횟수: {metricsData[currentIndex].bufferingEvents}</Text>
-                <Text>
-                  비디오 버퍼링 시간: {metricsData[currentIndex].bufferingDuration.toFixed(1)}ms
-                </Text>
-                <Text>비디오 드롭 프레임: {metricsData[currentIndex].droppedFrames}</Text>
-              </>
-            )}
+            <View style={styles.videoMetricsRow}>
+              {metricsData[currentIndex] ? (
+                <>
+                  <Text style={styles.videoMetricItem}>
+                    로드: {metricsData[currentIndex].loadTime.toFixed(1)}ms
+                  </Text>
+                  <Text style={styles.videoMetricItem}>
+                    버퍼링 횟수: {metricsData[currentIndex].bufferingEvents}
+                  </Text>
+                  <Text style={styles.videoMetricItem}>
+                    버퍼링 시간: {metricsData[currentIndex].bufferingDuration.toFixed(1)}ms
+                  </Text>
+                  <Text style={styles.videoMetricItem}>
+                    드롭 프레임: {metricsData[currentIndex].droppedFrames}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.videoMetricPlaceholder}>비디오 정보 없음</Text>
+              )}
+            </View>
           </View>
         </>
       ) : (
@@ -426,15 +436,27 @@ export function AutomatedFeedTest({
           <Text>총 프레임 드롭: {results.frameDrops}</Text>
           <Text>최대 메모리 사용량: {results.memoryUsage?.toFixed(1)}MB</Text>
           <Text>평균 전환 지연: {results.transitionDelay?.toFixed(1)}ms</Text>
-          {results.videoItemsCount > 0 && (
-            <>
-              <Text>비디오 평균 로드 시간: {results.videoAverageLoadTime?.toFixed(1)}ms</Text>
-              <Text>비디오 버퍼링 횟수: {results.videoBufferingEvents}</Text>
-              <Text>비디오 버퍼링 총 시간: {results.videoBufferingDuration?.toFixed(1)}ms</Text>
-              <Text>비디오 드롭된 프레임: {results.videoDroppedFrames}</Text>
-              <Text>비디오 아이템 수: {results.videoItemsCount}</Text>
-            </>
-          )}
+          <View style={styles.videoMetricsRow}>
+            {results.videoItemsCount > 0 ? (
+              <>
+                <Text style={styles.videoMetricItem}>
+                  평균 로드: {results.videoAverageLoadTime?.toFixed(1)}ms
+                </Text>
+                <Text style={styles.videoMetricItem}>
+                  버퍼링 횟수: {results.videoBufferingEvents}
+                </Text>
+                <Text style={styles.videoMetricItem}>
+                  버퍼링 총 시간: {results.videoBufferingDuration?.toFixed(1)}ms
+                </Text>
+                <Text style={styles.videoMetricItem}>
+                  드롭 프레임: {results.videoDroppedFrames}
+                </Text>
+                <Text style={styles.videoMetricItem}>비디오 아이템: {results.videoItemsCount}</Text>
+              </>
+            ) : (
+              <Text style={styles.videoMetricPlaceholder}>비디오 결과 없음</Text>
+            )}
+          </View>
         </View>
       )}
 
@@ -472,12 +494,33 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: '#e0e0e0',
     borderRadius: 4,
+    minHeight: 120,
+  },
+  videoMetricsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#cccccc',
+  },
+  videoMetricItem: {
+    fontSize: 12,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  videoMetricPlaceholder: {
+    fontSize: 12,
+    color: '#666666',
+    fontStyle: 'italic',
   },
   results: {
     marginTop: 20,
     padding: 16,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
+    minHeight: 180,
   },
   resultTitle: {
     fontSize: 16,
